@@ -87,7 +87,7 @@ class RscfParser(BaseParser):
                                 'title': item.find('a', class_='news-title').text.strip(),
                                 'category': item.find('a', class_='news-category').text.strip(),
                                 'link': item.find('a', class_='news-title')['href'],
-                                'author': 'РНФЦ'  # Добавляем автора сразу
+                                'author': 'РНФ'  # Добавляем автора сразу
                             }
                             news_items.append(news)
                         
@@ -230,7 +230,7 @@ class RscfParser(BaseParser):
                 return None
             
             # Добавляем ведущий ноль к дню и месяцу
-            return f"{day.zfill(2)}-{month_num.zfill(2)}-{year}"
+            return f"{year}-{month_num.zfill(2)}-{day.zfill(2)}"
         except Exception as e:
             return None 
 

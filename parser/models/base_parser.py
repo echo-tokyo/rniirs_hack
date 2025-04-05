@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Callable
 from datetime import datetime
 
+
 class BaseParser(ABC):
     """Абстрактный базовый класс для всех парсеров новостей"""
     
