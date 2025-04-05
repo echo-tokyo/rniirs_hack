@@ -26,7 +26,7 @@ class NewsAPIView(APIView):
     @staticmethod
     def get(request):
         if request.query_params.get('confirmed') == "False" and request.user.is_superuser:
-            news = News.objects.all().filter(confirmed=False)
+            news = News.objects.all().filter(is_confirmed=False)
             serializer = NewsSerializer(news, many=True)
             return Response(serializer.data)
 
@@ -65,7 +65,7 @@ class NewsAPIView(APIView):
     @staticmethod
     def patch(request):
         if request.user.is_superuser:
-            news_id = request.data.get('news_id')
+            news_id = request.query_params.get('news_id')
 
             if not news_id:
                 return Response({'error': 'Missing news_id'}, status=status.HTTP_400_BAD_REQUEST)
@@ -85,7 +85,7 @@ class NewsAPIView(APIView):
     @staticmethod
     def delete(request):
         if request.user.is_superuser:
-            news_id = request.data.get('news_id')
+            news_id = request.query_params.get('news_id')
 
             instance = get_object_or_404(News, pk=news_id)
 
