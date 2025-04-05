@@ -1,10 +1,10 @@
 <template>
   <div class="item">
-    <form action="" @submit='e.preventDefault()'> 
+    <form action="" @submit.prevent='handleSubmit()'> 
       <h1>Вход</h1>
       <input type="text" placeholder='Логин' v-model='loginValue'>
       <input type="password" placeholder='Пароль' v-model='passValue'>
-      <input type="button" value='Войти'
+      <input type="submit" value='Войти'>
     </form>
     <p>Еще нет аккаунта ? <span @click='routing()'>Зарегистрируйтесь</span></p>
   </div>
@@ -15,7 +15,15 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const routing = () => {
+
+const handleSubmit = (e) => {
+  if (e && e.preventDefault) {
+    e.preventDefault()
+  }
+  router.push( { name: 'main' } )
+}
+
+const routing = (e) => {
   router.push({ name: 'signup' })
 }
 const loginValue = ref('')
