@@ -13,7 +13,7 @@ class Category(models.Model):
 class News(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    date = models.DateField()
+    date = models.DateField(auto_now_add=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     is_confirmed = models.BooleanField(default=False)
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

@@ -23,7 +23,7 @@ class NewsSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(max_length=255)
     description = serializers.CharField()
-    date = serializers.DateTimeField()
+    date = serializers.DateField()
     category_id = serializers.IntegerField()
     is_confirmed = serializers.BooleanField(default=False)
     author_id = serializers.IntegerField()
