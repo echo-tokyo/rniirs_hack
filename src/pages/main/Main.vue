@@ -7,16 +7,17 @@ import Modal from '@/components/Modal.vue'
 import CreateNewsForm from '@/components/CreateNewsForm.vue'
 import { testData } from './testData'
 import { testCategories } from './testCategories'
-import { useNewsDataStore } from '@/app/store/store'
+import { useNewsDataStore, useCategoriesStore } from '@/app/store/store'
 
 const data = useNewsDataStore()
+const categories = useCategoriesStore()
 const router = useRouter()
 const isAdmin = localStorage.getItem('isAdmin')
 
 const selectOptions = ref([])
-const selectedCategory = ref('')
-const selectedCity = ref('')
-const selectedSort = ref('')
+const selectedCategory = ref(categories.categories.category || '')
+const selectedCity = ref(categories.categories.city || '')
+const selectedSort = ref(categories.categories.sort || '')
 
 const cityOptions = ['РНФ', 'Наука.рф']
 const sortOptions = ['Новые', 'Старые']
@@ -57,9 +58,14 @@ const filteredNews = computed(() => {
 // отслеживание изменения селектов
 watch([selectedCategory, selectedCity, selectedSort], ([category, city, sort]) => {
   console.log({
-    Категория: category || 'Не выбрано',
-    Источник: city || 'Не выбрано',
-    Сортировка: sort || 'Не выбрано',
+    Категория: category || null,
+    Источник: city || null,
+    Сортировка: sort || null,
+  })
+  categories.updateCategories({
+    category: category || null,
+    city: city || null,
+    sort: sort || null,
   })
 })
 
