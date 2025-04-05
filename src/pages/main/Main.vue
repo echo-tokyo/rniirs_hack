@@ -110,6 +110,7 @@ const handleCreateNews = (newsData) => {
     </div>
   </div>
   <div class="NewsContainer">
+    <div v-if="filteredNews.length == 0" class="no-news-message">Упс! Новости по вашим параметрам не найдены, показаны по схожей тематике</div>
     <template v-if="filteredNews.length > 0">
       <NewsCard
         v-for="item in filteredNews"
@@ -123,7 +124,6 @@ const handleCreateNews = (newsData) => {
         @update:is_liked="item.is_liked = $event"
       />
     </template>
-    <div v-else class="no-news-message">Нет новостей для отображения</div>
   </div>
 
   <Modal :is-open="isModalOpen" @close="isModalOpen = false">
@@ -140,6 +140,12 @@ const handleCreateNews = (newsData) => {
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
+}
+
+.no-news-message{
+  display: flex;
+  justify-content: center;
+  color: #676767;
 }
 
 .selects-container {
