@@ -1,12 +1,12 @@
 <template>
   <div class="item">
+    <h1>Регистрация</h1>
     <form action="" @submit='e.preventDefault()'> 
-      <h1>Вход</h1>
       <input type="text" placeholder='Логин' v-model='loginValue'>
       <input type="password" placeholder='Пароль' v-model='passValue'>
       <input type="button" value='Войти'
     </form>
-    <p>Еще нет аккаунта ? <span @click='routing()'>Зарегистрируйтесь</span></p>
+    <h3>Есть аккаунт ? <span @click='routing()'>Войдите</span></h3>
   </div>
 </template>
 
@@ -16,7 +16,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const routing = () => {
-  router.push({ name: 'signup' })
+  router.push({ name: 'signin' })
 }
 const loginValue = ref('')
 const passValue = ref('')
@@ -30,7 +30,6 @@ const passValue = ref('')
   justify-content: center;
   min-height: 100vh;
   margin: 0;
-  padding: 20px;
   box-sizing: border-box;
   gap: 20px;
   form{
