@@ -1,0 +1,41 @@
+# docker-compose.yml
+
+services:
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nginx
+    container_name: "nginx_cont"
+    restart: always
+    ports:
+      - 81:80
+    depends_on:
+      - django_app
+
+  django_app:
+    image: backend_app
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: django_cont
+    restart: always
+    env_file:
+      - backend/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  db:
+    image: mysql:latest
+    container_name: "db_cont"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+    volumes:
+      - my_mysql_volume:/var/lib/mysql
+
+volumes:
+  my_mysql_volume:
