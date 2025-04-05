@@ -25,6 +25,7 @@ watch(
 const emit = defineEmits(['update:is_liked'])
 
 const toggleFavorite = () => {
+  // сделать запрос на изменение статуса
   isFavorite.value = !isFavorite.value
   emit('update:is_liked', isFavorite.value)
 }
