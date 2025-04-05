@@ -31,7 +31,7 @@ class NewsAPIView(APIView):
             return Response(serializer.data)
 
         elif not request.query_params.get('user_id') == request.user.id:
-            news = News.objects.all().filter(user_id=request.user.id)
+            news = News.objects.all().filter(author_id=request.user.id)
             serializer = NewsSerializer(news, many=True)
             return Response(serializer.data)
 
@@ -43,21 +43,19 @@ class NewsAPIView(APIView):
     @staticmethod
     def post(request):
         if request.user.is_superuser:
-            serializer = NewsSerializer(data=request.data)
-            serializer.is_confirmed = True
-
+            data = request.data
+            data["is_confirmed"] = True
+            serializer = NewsSerializer(data=data)
             if serializer.is_valid():
-                serializer.save()
+                serializer.save(data)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         else:
             serializer = NewsSerializer(data=request.data)
-            serializer.is_confirmed = False
-
             if serializer.is_valid():
-                serializer.save()
+                serializer.save(request.data)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -75,7 +73,7 @@ class NewsAPIView(APIView):
             serializer = NewsSerializer(instance=instance, data=request.data, partial=True)
 
             if serializer.is_valid():
-                serializer.save()
+                serializer.save(request.data)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

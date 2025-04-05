@@ -23,9 +23,9 @@ class NewsSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(max_length=255)
     description = serializers.CharField()
-    date = serializers.DateField()
+    date = serializers.DateField(required=False)
     category_id = serializers.IntegerField()
-    is_confirmed = serializers.BooleanField(default=False)
+    is_confirmed = serializers.BooleanField(default=False, required=False)
     author_id = serializers.IntegerField()
 
     def save(self, validated_data):
