@@ -7,10 +7,11 @@ import Modal from '@/components/Modal.vue'
 import CreateNewsForm from '@/components/CreateNewsForm.vue'
 import { testData } from './testData'
 import { testCategories } from './testCategories'
+import { useNewsDataStore } from '@/app/store/store'
 
+const data = useNewsDataStore()
 const router = useRouter()
 const isAdmin = localStorage.getItem('isAdmin')
-const news = ref(null);
 
 const selectOptions = ref([])
 
@@ -35,9 +36,9 @@ onMounted(() => {
   if(!localStorage.getItem('token')){
     router.push({name: 'signin'})
   }
-  // получили данные после запроса (testData это response)
-  news.value = testData
 
+  // получили данные после запроса (testData это response). сохранить в стейт менеджер
+  data.updateNews(testData)
   // получили категории после запроса
   selectOptions.value = testCategories.map(el => el.data)
 })
@@ -76,7 +77,7 @@ const handleCreateNews = (newsData) => {
     </div>
   </div>
   <div class="NewsContainer">
-    <NewsCard v-for='item in news'
+    <NewsCard v-for='item in data.news'
     :key='item.id'
     :id='item.id'
     :header='item.title'

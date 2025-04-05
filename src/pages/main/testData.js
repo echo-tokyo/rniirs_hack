@@ -1,8 +1,10 @@
+import { testMarkDown } from './testMarkDown'
+
 export const testData = [
     {
         "id":1,
         "title":"news2",
-        "description":"news2 desc",
+        "description": testMarkDown,
         "date":"2025-04-05",
         "category_id":5,
         "is_confirmed":true,
