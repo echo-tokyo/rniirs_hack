@@ -12,11 +12,11 @@ services:
     ports:
       - 81:80
     networks:
-      main: 
+      main:
     depends_on:
-      - djangoApp
+      - djangoapp
 
-  djangoApp:
+  djangoapp:
     image: backend_app
     build:
       context: ./backend
@@ -38,7 +38,6 @@ services:
       context: ./parser
       dockerfile: Dockerfile
     volumes:
-      - parser_app:/app
       - parser_json_objects:/app/json_objects
     restart: always
     env_file:
@@ -46,7 +45,7 @@ services:
     networks:
       main:
     depends_on:
-      - djangoApp
+      - djangoapp
 
   db:
     image: mysql:latest
@@ -65,5 +64,4 @@ networks:
 
 volumes:
   my_mysql_volume:
-  parser_app:
   parser_json_objects:
