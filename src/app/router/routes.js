@@ -1,4 +1,4 @@
-import { Main, SignIn } from "@/pages";
+import { Main, SignIn, NewsPage } from "@/pages";
 import SignUp from '@/pages/signUp/SignUp.vue'
 
 export const routes = [
@@ -16,5 +16,11 @@ export const routes = [
     path: '/signUp',
     name: 'signup',
     component: SignUp,
+  },
+  {
+    path: '/news/:id',
+    name: 'news',
+    component: NewsPage,
+    props: true
   }
 ];

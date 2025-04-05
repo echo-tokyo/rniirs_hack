@@ -6,7 +6,7 @@
       <input type="password" placeholder='Пароль' v-model='passValue'>
       <input type="submit" value='Войти'>
     </form>
-    <h3>Есть аккаунт ? <span @click='routing()'>Войдите</span></h3>
+    <h3>Есть аккаунт ? <span class='form-span' @click='routing()'>Войдите</span></h3>
   </div>
 </template>
 
