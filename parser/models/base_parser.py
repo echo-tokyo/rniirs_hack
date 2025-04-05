@@ -1,0 +1,22 @@
+from abc import ABC, abstractmethod
+from typing import List, Dict, Any
+from datetime import datetime
+
+class BaseParser(ABC):
+    """Абстрактный базовый класс для всех парсеров новостей"""
+    
+    @abstractmethod
+    def get_news(self, **kwargs) -> List[Dict[str, str]]:
+        """Получает список новостей"""
+        pass
+    
+    @abstractmethod
+    def get_news_detail(self, url: str) -> Dict[str, Any]:
+        """Получает детальную информацию о новости"""
+        pass
+    
+    @property
+    @abstractmethod
+    def source_name(self) -> str:
+        """Возвращает название источника новостей"""
+        pass 
