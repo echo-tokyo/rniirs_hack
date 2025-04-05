@@ -15,8 +15,8 @@ const categories = useCategoriesStore()
 const router = useRouter()
 const isAdmin = localStorage.getItem('isAdmin')
 
-const selectOptions = ref([])
 const isFavorite = ref(false)
+const selectOptions = ref([])
 const selectedCategory = ref(categories.categories.category || '')
 const selectedCity = ref(categories.categories.city || '')
 const selectedSort = ref(categories.categories.sort || '')
@@ -71,10 +71,6 @@ watch([selectedCategory, selectedCity, selectedSort], ([category, city, sort]) =
   })
 })
 
-const handleRemoveFromFavorites = (id) => {
-  data.news = data.news.filter((item) => item.id !== id)
-}
-
 // загрузка ресурсов
 const fetchData = () => {
   if (!localStorage.getItem('token')) {
@@ -86,7 +82,6 @@ const fetchData = () => {
   // после получения категорий
   selectOptions.value = testCategories.map((el) => el?.data)
 }
-onMounted(fetchData)
 
 const isModalOpen = ref(false)
 
@@ -101,9 +96,12 @@ const getFavorite = () => {
     // если выбран фильтр понравившихся, то запрос на получение этих данных
     data.updateNews(testFavoriteData)
   } else {
+    console.log('first')
     fetchData()
   }
 }
+
+onMounted(fetchData)
 </script>
 
 <template>
@@ -163,7 +161,6 @@ const getFavorite = () => {
         :category="item.category?.title"
         :is_liked="item.is_liked"
         @update:is_liked="item.is_liked = $event"
-        @remove-from-favorites="handleRemoveFromFavorites"
       />
     </template>
   </div>
