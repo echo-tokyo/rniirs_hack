@@ -35,6 +35,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [os.getenv('HOST')]
 
+PARSER_PASSWORD = os.getenv('PARSER_PASSWORD')
 
 # Application definition
 

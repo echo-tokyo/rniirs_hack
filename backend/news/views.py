@@ -105,7 +105,7 @@ class NewsParsAPIView(APIView):
     @staticmethod
     def post(request):
 
-        serializer = NewsSerializer(data=request.data)
+        serializer = NewsSerializer(data=request.data, many=True)
         if serializer.is_valid():
             serializer.save(request.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
