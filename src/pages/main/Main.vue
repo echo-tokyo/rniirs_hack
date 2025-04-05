@@ -21,13 +21,26 @@ const selectedCategory = ref(categories.categories.category || '')
 const selectedCity = ref(categories.categories.city || '')
 const selectedSort = ref(categories.categories.sort || '')
 
-const cityOptions = ['РНФ', 'Наука.рф']
+const cityOptions = ['РНФ', 'Наука.рф', 'Пользователи']
 const sortOptions = ['Новые', 'Старые']
+
+// Добавим функцию для определения источника новости
+const getNewsSource = (authorLogin) => {
+  if (authorLogin === 'РНФ' || authorLogin === 'Наука.рф') {
+    return authorLogin
+  }
+  return 'Пользователи'
+}
 
 // фильтрация новостей
 const filteredNews = computed(() => {
   if (!data.news || !Array.isArray(data.news)) {
     return []
+  }
+
+  // Если активен режим избранного, показываем только избранные новости
+  if (isFavorite.value) {
+    return data.getFavoriteNews()
   }
 
   let result = [...data.news]
@@ -39,12 +52,11 @@ const filteredNews = computed(() => {
   // Если после фильтрации по категории нет результатов, сбрасываем фильтр по источнику
   if (result.length === 0 && selectedCity.value) {
     selectedCity.value = ''
-    console.log('data.news', data.news)
     return data.news
   }
 
   if (selectedCity.value) {
-    result = result.filter((news) => news?.author.login === selectedCity.value)
+    result = result.filter((news) => getNewsSource(news?.author.login) === selectedCity.value)
   }
 
   if (selectedSort.value === 'Новые') {
@@ -63,10 +75,7 @@ const filteredNews = computed(() => {
 
   return result
 })
-if(filteredNews.value.length === 0){
-      selectedCity.value = ''
-      console.log('filteredNews', filteredNews.value)
-}
+
 // отслеживание изменения селектов
 watch([selectedCategory, selectedCity, selectedSort], ([category, city, sort]) => {
   console.log({
@@ -89,6 +98,7 @@ const fetchData = () => {
 
   // после получения ресурсов
   data.updateNews(testData)
+  
   // после получения категорий
   selectOptions.value = testCategories.map((el) => el?.data)
 }
@@ -102,13 +112,6 @@ const handleCreateNews = (newsData) => {
 
 const getFavorite = () => {
   isFavorite.value = !isFavorite.value
-  if (isFavorite.value) {
-    // если выбран фильтр понравившихся, то запрос на получение этих данных
-    data.updateNews(testFavoriteData)
-  } else {
-    console.log('first')
-    fetchData()
-  }
 }
 
 onMounted(fetchData)
@@ -170,7 +173,6 @@ onMounted(fetchData)
         :date="item.date"
         :category="item.category?.title"
         :is_liked="item.is_liked"
-        @update:is_liked="item.is_liked = $event"
       />
     </template>
   </div>

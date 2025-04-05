@@ -1,5 +1,8 @@
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
+import { useNewsDataStore } from '@/app/store/store'
+
+const store = useNewsDataStore()
 
 const props = defineProps({
   header: String,
@@ -15,6 +18,11 @@ const props = defineProps({
 
 const isFavorite = ref(props.is_liked)
 
+onMounted(() => {
+  // Проверяем, есть ли id в избранном при монтировании
+  isFavorite.value = store.favorites.includes(props.id)
+})
+
 watch(
   () => props.is_liked,
   (newVal) => {
@@ -22,12 +30,18 @@ watch(
   }
 )
 
-const emit = defineEmits(['update:is_liked'])
+watch(
+  () => store.favorites,
+  () => {
+    // Обновляем состояние при изменении favorites в store
+    isFavorite.value = store.favorites.includes(props.id)
+  }
+)
 
 const toggleFavorite = () => {
-  // сделать запрос на изменение статуса
-  isFavorite.value = !isFavorite.value
-  emit('update:is_liked', isFavorite.value)
+  // Вызываем метод toggleFavorite из стора
+  store.toggleFavorite(props.id)
+  isFavorite.value = store.favorites.includes(props.id)
 }
 
 const cleanDescription = computed(() => {
