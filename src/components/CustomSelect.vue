@@ -46,7 +46,7 @@ onBeforeUnmount(() => {
 })
 
 const selectOption = (option) => {
-  console.log(selectedOption.value, option)
+  
   if(selectedOption.value === option) {
     selectedOption.value = props.placeholder
     isOpen.value = false
