@@ -110,7 +110,6 @@ CORS_ALLOW_HEADERS = (
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -120,10 +119,14 @@ DATABASES = {
         'HOST': os.getenv('DB_HOST'),
         'PORT': os.getenv('DB_PORT'),
         'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-        }
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
+# set up db socket (if presented in .env)
+db_socket = os.getenv('DB_SOCKET')
+if db_socket:
+    DATABASES["default"]["OPTIONS"]["unix_socket"] = db_socket
 
 
 # Password validation
