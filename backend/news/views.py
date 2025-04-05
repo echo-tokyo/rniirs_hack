@@ -70,15 +70,17 @@ class NewsAPIView(APIView):
 
             instance = get_object_or_404(News, pk=news_id)
 
-            serializer = NewsSerializer(instance=instance, data=request.data, partial=True)
+            data = request.data
+            data["is_confirmed"] = True
+            serializer = NewsSerializer(instance=instance, data=data, partial=True)
 
             if serializer.is_valid():
-                serializer.save(request.data)
+                serializer.update(instance, data)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
     @staticmethod
     def delete(request):
@@ -93,4 +95,4 @@ class NewsAPIView(APIView):
             instance.delete()
             return Response(status=status.HTTP_200_OK)
         else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_403_FORBIDDEN)
