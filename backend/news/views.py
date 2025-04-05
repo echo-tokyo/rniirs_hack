@@ -3,6 +3,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from users.serializers import CustomUserSerializer
 from .serializers import *
 from .models import *
 
@@ -125,9 +127,26 @@ class NewsFavoriteGETAPIView(APIView):
 
     @staticmethod
     def get(request):
-        news = News.objects.all().filter(is_confirmed=True, liked=True)
+        str_user_id = request.query_params.get('user_id')
+
+        if not str_user_id:
+            # get favorite news for current user
+            news = News.objects.all().filter(is_confirmed=True, liked=request.user)
+            serializer = NewsSerializer(news, many=True)
+            user_serializer = CustomUserSerializer(request.user, many=False)
+            return Response({"news": serializer.data, "user": user_serializer.data})
+
+        # get favorite news for specified user
+        try:
+            user_id = int(str_user_id)
+        except ValueError as err:
+            return Response({"error": "invalid user id was given"}, status=status.HTTP_400_BAD_REQUEST)
+        user_with_favorite = get_object_or_404(CustomUser, pk=user_id)
+        user_serializer = CustomUserSerializer(user_with_favorite, many=False)
+
+        news = News.objects.all().filter(is_confirmed=True, liked=user_with_favorite)
         serializer = NewsSerializer(news, many=True)
-        return Response(serializer.data)
+        return Response({"news": serializer.data, "user": user_serializer.data})
 
 class NewsFavoritePOSTAPIView(APIView):
 

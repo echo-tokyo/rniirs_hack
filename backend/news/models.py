@@ -18,8 +18,3 @@ class News(models.Model):
     is_confirmed = models.BooleanField(default=False)
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     liked = models.ManyToManyField(CustomUser, related_name="favorite")
-
-
-# class Favorite(models.Model):
-#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-#     news = models.ForeignKey(News, on_delete=models.CASCADE)
