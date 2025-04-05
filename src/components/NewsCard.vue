@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 const props = defineProps({
     header: String,
@@ -26,13 +26,27 @@ const toggleFavorite = () => {
   emit('update:is_liked', isFavorite.value)
 }
 
+const cleanDescription = computed(() => {
+  if (!props.description) return ''
+  return props.description
+    .replace(/\*\*(.*?)\*\*/g, '$1') // Убираем жирный текст **
+    .replace(/\*(.*?)\*/g, '$1')     // Убираем курсив *
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Убираем ссылки [text](url)
+    .replace(/\`(.*?)\`/g, '$1')     // Убираем инлайн код
+    .replace(/\#{1,6}\s/g, '')       // Убираем заголовки #
+    .replace(/\n\-\s/g, '\n')        // Убираем маркеры списка
+    .replace(/\n\d\.\s/g, '\n')      // Убираем нумерованные списки
+    .replace(/!\[(.*?)\]\(.*?\)/g, '') // Убираем картинки ![alt](url)
+    .replace(/!image/g, '')    // Убираем !image
+})
+
 </script>
 <template>
 <div class="NewsCard-container" @click="$router.push(`/news/${props.id}`)">
     <div class="NewsCard-information">
         <div class="News-information__text">
             <h2 class="NewsCard-information__header">{{ props.header }}</h2>
-            <h2 class="NewsCard-information__description">{{ props.description }}</h2>
+            <h2 class="NewsCard-information__description">{{ cleanDescription }}</h2>
         </div>
 
         <div class="NewsCard-bottom">
