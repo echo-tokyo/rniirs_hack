@@ -92,22 +92,29 @@ const handleCreateNews = (newsData) => {
 <template>
   <div class="app">
     <div class="container">
-      <div class="selects-container">
-        <CustomSelect
-          v-model="selectedCategory"
-          :options="selectOptions"
-          placeholder="Выберите категорию"
-        />
-        <CustomSelect
-          v-model="selectedCity"
-          :options="cityOptions"
-          placeholder="Искать из источника"
-        />
-        <CustomSelect
-          v-model="selectedSort"
-          :options="sortOptions"
-          placeholder="Сортировать по дате"
-        />
+      <div class="filters-container">
+        <button class="favorite-button">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/>
+          </svg>
+        </button>
+        <div class="selects-container">
+          <CustomSelect
+            v-model="selectedCategory"
+            :options="selectOptions"
+            placeholder="Выберите категорию"
+          />
+          <CustomSelect
+            v-model="selectedCity"
+            :options="cityOptions"
+            placeholder="Искать из источника"
+          />
+          <CustomSelect
+            v-model="selectedSort"
+            :options="sortOptions"
+            placeholder="Сортировать по дате"
+          />
+        </div>
       </div>
       <button v-if="!isAdmin" class="requests-button" @click="router.push('/requests')">
         Запросы
@@ -153,6 +160,32 @@ const handleCreateNews = (newsData) => {
   justify-content: center;
   color: #676767;
 }
+.filters-container {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+.favorite-button {
+  width: 65px;
+  height: 65px;
+  border: none;
+  border-radius: 20px;
+  background: white;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  flex-shrink: 0;
+}
+
+.favorite-button:hover {
+  color: #ff4757;
+  background: rgba(255, 71, 87, 0.1);
+}
 
 .selects-container {
   display: flex;
@@ -165,6 +198,7 @@ const handleCreateNews = (newsData) => {
 
 .selects-container > * {
   flex: 1;
+  min-width: 200px; /* Минимальная ширина для селектов */
 }
 
 .create-button,
@@ -217,12 +251,20 @@ const handleCreateNews = (newsData) => {
     padding: 0 1rem;
   }
 
+  .filters-container {
+    flex-direction: column;
+  }
+
   .selects-container {
     flex-direction: column;
     align-items: stretch;
   }
 
   .selects-container > * {
+    width: 100%;
+  }
+
+  .favorite-button {
     width: 100%;
   }
 }
