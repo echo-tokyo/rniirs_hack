@@ -6,25 +6,13 @@ import { useRouter } from 'vue-router'
 import Modal from '@/components/Modal.vue'
 import CreateNewsForm from '@/components/CreateNewsForm.vue'
 import { testData } from './testData'
+import { testCategories } from './testCategories'
 
 const router = useRouter()
 const isAdmin = localStorage.getItem('isAdmin')
 const news = ref(null);
 
-onMounted(() => {
-  if(!localStorage.getItem('token')){
-    router.push({name: 'signin'})
-  }
-  // получили данные после запроса (testData это response)
-  news.value = testData
-})
-
-const selectOptions = [
-  'Все категории',
-  'Название категории',
-  'Избранное',
-  'Другое'
-]
+const selectOptions = ref(null)
 
 const cityOptions = [
   'Москва',
@@ -42,6 +30,18 @@ const sortOptions = [
   'По рейтингу',
   'По отзывам'
 ]
+
+onMounted(() => {
+  if(!localStorage.getItem('token')){
+    router.push({name: 'signin'})
+  }
+  // получили данные после запроса (testData это response)
+  news.value = testData
+
+  // получили категории после запроса
+  selectOptions.value = testCategories.map(el => el.data)
+})
+
 
 const isModalOpen = ref(false)
 
