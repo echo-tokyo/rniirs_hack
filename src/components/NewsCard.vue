@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = defineProps({
     header: String,
@@ -9,14 +9,23 @@ const props = defineProps({
     id: {
         type: [String, Number],
         required: true
-    }
+    },
+    is_liked: Boolean,
 })
 
-const isFavorite = ref(false)
+const isFavorite = ref(props.is_liked)
+
+watch(() => props.is_liked, (newVal) => {
+  isFavorite.value = newVal
+})
+
+const emit = defineEmits(['update:is_liked'])
 
 const toggleFavorite = () => {
-    isFavorite.value = !isFavorite.value
+  isFavorite.value = !isFavorite.value
+  emit('update:is_liked', isFavorite.value)
 }
+
 </script>
 <template>
 <div class="NewsCard-container" @click="$router.push(`/news/${props.id}`)">

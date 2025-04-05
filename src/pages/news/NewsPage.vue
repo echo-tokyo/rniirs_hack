@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 const isAdmin = localStorage.getItem('isAdmin')
 const route = useRoute()
 const router = useRouter()
+const id = route.params.id // Use route here
 const newsData = ref({
   header: '',
   description: '',
@@ -13,20 +14,16 @@ const newsData = ref({
 })
 
 onMounted(() => {
+  // получили данные по id
   const mockData = {
-    1: {
-      header: "НОУ ВЭЙ, ЧИКИПИКИ",
-      description: "АЛИНЫ ЧИКИ ПИКИ ГЕТ ДИС ВОРЛД АУТ, НО ВЭЙ ВАТАКАК СМОТРИТЕ",
-      date: "03.05.2024",
-      category: "Спортивный интерес",
-      author: "ФНР"
-    }
+    header: "НОУ ВЭЙ, ЧИКИПИКИ",
+    description: "АЛИНЫ ЧИКИ ПИКИ ГЕТ ДИС ВОРЛД АУТ, НО ВЭЙ ВАТАКАК СМОТРИТЕ",
+    date: "03.05.2024",
+    category: "Спортивный интерес",
+    author: "ФНР"
   }
   
-  const id = route.params.id // Use route here
-  if (mockData[id]) {
-    newsData.value = mockData[id]
-  }
+    newsData.value = mockData
 })
 
 const newsDelete = () => {

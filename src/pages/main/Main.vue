@@ -5,14 +5,18 @@ import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Modal from '@/components/Modal.vue'
 import CreateNewsForm from '@/components/CreateNewsForm.vue'
+import { testData } from './testData'
 
 const router = useRouter()
 const isAdmin = localStorage.getItem('isAdmin')
+const news = ref(null);
 
 onMounted(() => {
   if(!localStorage.getItem('token')){
     router.push({name: 'signin'})
   }
+  // получили данные после запроса (testData это response)
+  news.value = testData
 })
 
 const selectOptions = [
@@ -45,6 +49,7 @@ const handleCreateNews = (newsData) => {
   console.log('Создана новость:', newsData)
   isModalOpen.value = false
 }
+
 </script>
 
 <template>
@@ -71,15 +76,18 @@ const handleCreateNews = (newsData) => {
     </div>
   </div>
   <div class="NewsContainer">
-    <NewsCard 
-      id="1"
-      header="НОУ ВЭЙ, ЧИКИПИКИ" 
-      description="АЛИНЫ ЧИКИ ПИКИ ГЕТ ДИС ВОРЛД АУТ, НО ВЭЙ ВАТАКАК СМОТРИТЕ" 
-      date="03.05.2024" 
-      category="Спортивный интерес"
+    <NewsCard v-for='item in news'
+    :key='item.id'
+    :id='item.id'
+    :header='item.title'
+    :description='item.description'
+    :date='item.date'
+    :category='item.category.title'
+    :is_liked='item.is_liked'
+    @update:is_liked="item.is_liked = $event"
     />
   </div>
-
+  
   <Modal 
     :is-open="isModalOpen"
     @close="isModalOpen = false"
@@ -136,6 +144,9 @@ const handleCreateNews = (newsData) => {
 }
 
 .NewsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
