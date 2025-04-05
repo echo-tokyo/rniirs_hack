@@ -30,7 +30,7 @@ export const testData = [
         "author_id":1,
         "author":{
             "id":1,
-            "login":"user1"
+            "login":"РНФ"
         },
         "category":{
             "id":5,
@@ -48,7 +48,7 @@ export const testData = [
         "author_id":1,
         "author":{
             "id":1,
-            "login":"user1"
+            "login":"Наука.рф"
         },
         "category":{
             "id":5,
