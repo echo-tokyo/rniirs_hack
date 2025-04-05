@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from users.views import CustomUserAPIView
 from news.views import NewsAPIView, CategoryAPIView, NewsParsAPIView, NewsFavoriteGETAPIView, NewsFavoritePOSTAPIView
@@ -28,8 +28,9 @@ urlpatterns = [
 
     path('api/users/', CustomUserAPIView.as_view(), name='users'),
     path('api/categories/', CategoryAPIView.as_view(), name='categories'),
-    path('api/news/', NewsAPIView.as_view(), name='news'),
-    path('api/news/<int:pk>/', NewsAPIView.as_view(), name='news'),
+
+    re_path(r'^api/news(/(?P<pk>\d+))?/?$', NewsAPIView.as_view(), name='stock'),
+
 
     path('api/news/favorite/', NewsFavoriteGETAPIView.as_view()),
     # favorite param may be one of "like" ore "unlike"

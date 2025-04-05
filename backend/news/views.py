@@ -26,7 +26,7 @@ class NewsAPIView(APIView):
     @staticmethod
     def get(request, pk):
         if pk:
-            news = News.objects.all().filter(id=pk)
+            news = News.objects.get(pk=pk)
             serializer = NewsSerializer(news, many=False)
             return Response(serializer.data)
 

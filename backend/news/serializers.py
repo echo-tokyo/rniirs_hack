@@ -40,7 +40,7 @@ class NewsSerializer(serializers.Serializer):
     def get_author(self, obj):
         # Здесь мы извлекаем объект автора по author_id
         try:
-            author = CustomUser.objects.get(id=obj.author_id)  # Замените `User` на вашу модель
+            author = CustomUser.objects.get(id=obj.author_id)[0]  # Замените `User` на вашу модель
             return {
                 "id": author.id,
                 "login": author.login,
