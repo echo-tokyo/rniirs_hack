@@ -29,10 +29,11 @@ urlpatterns = [
     path('api/users/', CustomUserAPIView.as_view(), name='users'),
     path('api/categories/', CategoryAPIView.as_view(), name='categories'),
     path('api/news/', NewsAPIView.as_view(), name='news'),
+    path('api/news/<int:pk>/', NewsAPIView.as_view(), name='news'),
 
     path('api/news/favorite/', NewsFavoriteGETAPIView.as_view()),
     # favorite param may be one of "like" ore "unlike"
-    path('api/news/favorite/<int:pk>/<str:favorite>', NewsFavoritePOSTAPIView.as_view()),
+    path('api/news/favorite/<int:pk>/<str:favorite>/', NewsFavoritePOSTAPIView.as_view()),
 
     path('api-dev/news/', NewsParsAPIView.as_view(), name='newspars'),
 ]

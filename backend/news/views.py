@@ -24,7 +24,12 @@ class NewsAPIView(APIView):
     permission_classes = (IsAuthenticated, )
 
     @staticmethod
-    def get(request):
+    def get(request, pk):
+        if pk:
+            news = News.objects.all().filter(id=pk)
+            serializer = NewsSerializer(news, many=False)
+            return Response(serializer.data)
+
         if not request.user.is_superuser and not request.query_params:
             news = News.objects.all().filter(is_confirmed=True)
             serializer = NewsSerializer(news, many=True)
