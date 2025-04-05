@@ -34,9 +34,15 @@ services:
 
   parser_app:
     container_name: parser_cont
+    build:
+      context: ./parser
+      dockerfile: Dockerfile
+    volumes:
+      - parser_app:/app
+      - parser_json_objects:/app/json_objects
     restart: always
     env_file:
-      - parser/.env
+      - ./parser/.env
     networks:
       main:
     depends_on:
@@ -55,6 +61,9 @@ services:
 
 networks:
   main:
+    driver: bridge
 
 volumes:
   my_mysql_volume:
+  parser_app:
+  parser_json_objects:
