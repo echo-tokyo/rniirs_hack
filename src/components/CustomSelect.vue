@@ -10,11 +10,17 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: 'Выберите категорию'
+  },
+  modelValue: {
+    type: String,
+    default: ''
   }
 })
 
+const emit = defineEmits(['update:modelValue', 'select'])
+
 const isOpen = ref(false)
-const selectedOption = ref(props.placeholder)
+const selectedOption = ref(props.modelValue || props.placeholder)
 const selectRef = ref(null)
 
 const handleClickOutside = (event) => {
@@ -23,21 +29,36 @@ const handleClickOutside = (event) => {
   }
 }
 
+const handleOtherSelectOpen = (event) => {
+  if (selectRef.value && !selectRef.value.contains(event.target)) {
+    isOpen.value = false
+  }
+}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('select:opening', handleOtherSelectOpen)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('select:opening', handleOtherSelectOpen)
 })
 
 const selectOption = (option) => {
   selectedOption.value = option
   isOpen.value = false
+  emit('update:modelValue', option)
+  emit('select', option)
 }
 
 const toggleSelect = (event) => {
   event.stopPropagation()
+  
+  if (!isOpen.value) {
+    document.dispatchEvent(new CustomEvent('select:opening', { detail: selectRef.value }))
+  }
+  
   isOpen.value = !isOpen.value
 }
 </script>
@@ -63,7 +84,7 @@ const toggleSelect = (event) => {
         v-for="option in options" 
         :key="option"
         class="option"
-        @click="selectOption(option)"
+        @click.stop="selectOption(option)"
       >
         {{ option }}
       </div>

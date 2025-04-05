@@ -12,7 +12,7 @@ const router = useRouter()
 const isAdmin = localStorage.getItem('isAdmin')
 const news = ref(null);
 
-const selectOptions = ref(null)
+const selectOptions = ref([])
 
 const cityOptions = [
   'Москва',
@@ -69,7 +69,7 @@ const handleCreateNews = (newsData) => {
           placeholder="Сортировать по дате"
         />
       </div>
-      <button v-if='isAdmin' class="requests-button">Запросы</button>
+      <button v-if='!isAdmin' class="requests-button" @click='router.push("/requests")'>Запросы</button>
       <button class="create-button" @click="isModalOpen = true">
         Создать новость
       </button>

@@ -1,5 +1,6 @@
-import { Main, SignIn, NewsPage } from "@/pages";
+import { Main, SignIn, NewsPage, Requests } from "@/pages";
 import SignUp from '@/pages/signUp/SignUp.vue'
+import RequestPreview from '@/pages/requestPreview/RequestPreview.vue'
 
 export const routes = [
   {
@@ -21,6 +22,17 @@ export const routes = [
     path: '/news/:id',
     name: 'news',
     component: NewsPage,
+    props: true
+  },
+  {
+    path: '/requests',
+    name: 'requests',
+    component: Requests,
+  },
+  {
+    path: '/requests/:id',
+    name: 'request-preview',
+    component: RequestPreview,
     props: true
   }
 ];
