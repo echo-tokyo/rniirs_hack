@@ -14,9 +14,9 @@ services:
     networks:
       main: 
     depends_on:
-      - django_app
+      - djangoApp
 
-  django_app:
+  djangoApp:
     image: backend_app
     build:
       context: ./backend
@@ -46,7 +46,7 @@ services:
     networks:
       main:
     depends_on:
-      - django_app
+      - djangoApp
 
   db:
     image: mysql:latest

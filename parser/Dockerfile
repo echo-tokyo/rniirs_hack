@@ -1,5 +1,8 @@
 # Используем Python 3.11
-FROM python:3.11-slim
+FROM python:3.12.1
+
+#
+SHELL ["/bin/sh", "-c"]
 
 # Устанавливаем cron
 RUN apt-get update && apt-get install -y cron
@@ -26,14 +29,5 @@ RUN crontab /etc/cron.d/parser-cron
 # Создаем лог файл и даем права на запись
 RUN touch /var/log/cron.log && chmod 0666 /var/log/cron.log
 
-# Создаем скрипт для запуска
-COPY <<-"EOF" /start.sh
-#!/bin/bash
-cron
-tail -f /var/log/cron.log
-EOF
-
-RUN chmod +x /start.sh
-
 # Используем JSON формат для CMD
-CMD ["bash", "/start.sh"]
+ENTRYPOINT ["sh", "./start.sh"]

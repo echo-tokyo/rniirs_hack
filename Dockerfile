@@ -12,8 +12,8 @@ COPY nginx/nginx.conf /etc/nginx/conf.d
 
 COPY nginx/proxy_params /etc/nginx
 
-COPY frontend .
+#COPY frontend .
 
-RUN npm install
+#RUN npm install
 
-RUN npm run build
+#RUN npm run build
