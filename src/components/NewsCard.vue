@@ -22,7 +22,11 @@ watch(
   }
 )
 
-const emit = defineEmits(['update:is_liked'])
+const emit = defineEmits(['update:is_liked', 'remove-from-favorites']) // Добавляем новое событие
+
+const removeFromFavorite = () => {
+  emit('remove-from-favorites', props.id) // Эмитим событие с ID новости
+}
 
 const toggleFavorite = () => {
   isFavorite.value = !isFavorite.value
@@ -56,7 +60,7 @@ const cleanDescription = computed(() => {
         <button
           class="heart-button"
           :class="{ 'is-favorite': isFavorite }"
-          @click.stop="toggleFavorite"
+          @click.stop="isFavorite ? removeFromFavorite() : toggleFavorite()"
         >
           <svg
             width="24"

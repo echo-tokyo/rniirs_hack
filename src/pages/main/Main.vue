@@ -8,6 +8,7 @@ import CreateNewsForm from '@/components/CreateNewsForm.vue'
 import { testData } from './testData'
 import { testCategories } from './testCategories'
 import { useNewsDataStore, useCategoriesStore } from '@/app/store/store'
+import { testFavoriteData } from './testFavoriteData'
 
 const data = useNewsDataStore()
 const categories = useCategoriesStore()
@@ -15,6 +16,7 @@ const router = useRouter()
 const isAdmin = localStorage.getItem('isAdmin')
 
 const selectOptions = ref([])
+const isFavorite = ref(false)
 const selectedCategory = ref(categories.categories.category || '')
 const selectedCity = ref(categories.categories.city || '')
 const selectedSort = ref(categories.categories.sort || '')
@@ -69,8 +71,12 @@ watch([selectedCategory, selectedCity, selectedSort], ([category, city, sort]) =
   })
 })
 
+const handleRemoveFromFavorites = (id) => {
+  data.news = data.news.filter((item) => item.id !== id)
+}
+
 // загрузка ресурсов
-onMounted(() => {
+const fetchData = () => {
   if (!localStorage.getItem('token')) {
     router.push({ name: 'signin' })
   }
@@ -79,7 +85,8 @@ onMounted(() => {
   data.updateNews(testData)
   // после получения категорий
   selectOptions.value = testCategories.map((el) => el?.data)
-})
+}
+onMounted(fetchData)
 
 const isModalOpen = ref(false)
 
@@ -87,15 +94,34 @@ const handleCreateNews = (newsData) => {
   console.log('Создана новость:', newsData)
   isModalOpen.value = false
 }
+
+const getFavorite = () => {
+  isFavorite.value = !isFavorite.value
+  if (isFavorite.value) {
+    // если выбран фильтр понравившихся, то запрос на получение этих данных
+    data.updateNews(testFavoriteData)
+  } else {
+    fetchData()
+  }
+}
 </script>
 
 <template>
   <div class="app">
     <div class="container">
       <div class="filters-container">
-        <button class="favorite-button">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/>
+        <button class="favorite-button" @click="getFavorite()">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+              fill="currentColor"
+            />
           </svg>
         </button>
         <div class="selects-container">
@@ -123,7 +149,9 @@ const handleCreateNews = (newsData) => {
     </div>
   </div>
   <div class="NewsContainer">
-    <div v-if="filteredNews.length == 0" class="no-news-message">Упс! Новости по вашим параметрам не найдены, показаны по схожей тематике</div>
+    <div v-if="filteredNews.length == 0" class="no-news-message">
+      Упс! Новости по вашим параметрам не найдены, показаны по схожей тематике
+    </div>
     <template v-if="filteredNews.length > 0">
       <NewsCard
         v-for="item in filteredNews"
@@ -135,6 +163,7 @@ const handleCreateNews = (newsData) => {
         :category="item.category?.title"
         :is_liked="item.is_liked"
         @update:is_liked="item.is_liked = $event"
+        @remove-from-favorites="handleRemoveFromFavorites"
       />
     </template>
   </div>
@@ -155,7 +184,7 @@ const handleCreateNews = (newsData) => {
   margin: 0 auto;
 }
 
-.no-news-message{
+.no-news-message {
   display: flex;
   justify-content: center;
   color: #676767;
