@@ -32,6 +32,16 @@ services:
     depends_on:
       - db
 
+  parser_app:
+    container_name: parser_cont
+    restart: always
+    env_file:
+      - parser/.env
+    networks:
+      main:
+    depends_on:
+      - django_app
+
   db:
     image: mysql:latest
     container_name: "db_cont"
