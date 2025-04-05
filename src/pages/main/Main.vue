@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { CustomSelect, NewsCard } from "@/components"
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -14,6 +14,9 @@ const router = useRouter()
 const isAdmin = localStorage.getItem('isAdmin')
 
 const selectOptions = ref([])
+const selectedCategory = ref('')
+const selectedCity = ref('')
+const selectedSort = ref('')
 
 const cityOptions = [
   'РНФ',
@@ -24,6 +27,15 @@ const sortOptions = [
   'Новые',
   'Старые'
 ]
+
+// Следим за изменениями всех селектов
+watch([selectedCategory, selectedCity, selectedSort], ([category, city, sort]) => {
+  console.log({
+    Категория: category || 'Не выбрано',
+    Источник: city || 'Не выбрано',
+    Сортировка: sort || 'Не выбрано'
+  })
+})
 
 onMounted(() => {
   if(!localStorage.getItem('token')){
@@ -50,14 +62,17 @@ const handleCreateNews = (newsData) => {
     <div class="container">
       <div class="selects-container">
         <CustomSelect 
+          v-model="selectedCategory"
           :options="selectOptions"
           placeholder="Выберите категорию"
         />
         <CustomSelect 
+          v-model="selectedCity"
           :options="cityOptions"
           placeholder="Искать из источника"
         />
         <CustomSelect 
+          v-model="selectedSort"
           :options="sortOptions"
           placeholder="Сортировать по дате"
         />

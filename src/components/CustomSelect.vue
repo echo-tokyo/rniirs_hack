@@ -46,10 +46,19 @@ onBeforeUnmount(() => {
 })
 
 const selectOption = (option) => {
-  selectedOption.value = option
-  isOpen.value = false
-  emit('update:modelValue', option)
-  emit('select', option)
+  console.log(selectedOption.value, option)
+  if(selectedOption.value === option) {
+    selectedOption.value = props.placeholder
+    isOpen.value = false
+    emit('update:modelValue', '')
+    emit('select', '')
+    return
+  } else {
+    selectedOption.value = option
+    isOpen.value = false
+    emit('update:modelValue', option)
+    emit('select', option)
+  }
 }
 
 const toggleSelect = (event) => {
