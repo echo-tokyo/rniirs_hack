@@ -4,7 +4,7 @@
       <h1>Вход</h1>
       <input type="text" placeholder='Логин' v-model='loginValue'>
       <input type="password" placeholder='Пароль' v-model='passValue'>
-      <input type="submit" value='Войти'>
+      <input type="submit" value='Зарегистрироваться'>
     </form>
     <p>Еще нет аккаунта ? <span class='form-span' @click='routing()'>Зарегистрируйтесь</span></p>
   </div>

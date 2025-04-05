@@ -1,7 +1,6 @@
 import { Main, SignIn, NewsPage, Requests } from "@/pages";
 import SignUp from '@/pages/signUp/SignUp.vue'
 import RequestPreview from '@/pages/requestPreview/RequestPreview.vue'
-
 export const routes = [
   {
     path: '/signin',
