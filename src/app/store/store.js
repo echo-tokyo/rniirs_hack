@@ -10,3 +10,4 @@ export const useNewsDataStore = defineStore('counter', {
     },
   },
 })
+
