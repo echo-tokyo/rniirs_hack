@@ -16,7 +16,7 @@ export const testData = [
         },
         "category":{
             "id":5,
-            "title":"Лооооол"
+            "title":"Математика"
         }
     },
     {
@@ -34,7 +34,7 @@ export const testData = [
         },
         "category":{
             "id":5,
-            "title":"Сучка"
+            "title":"Айти"
         }
     },
     {
@@ -52,7 +52,7 @@ export const testData = [
         },
         "category":{
             "id":5,
-            "title":"Математика"
+            "title":"Химия"
         }
     },
 ]

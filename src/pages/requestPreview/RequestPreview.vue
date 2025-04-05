@@ -1,6 +1,8 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
 const router = useRouter()
 const route = useRoute()
@@ -13,8 +15,23 @@ const newsData = ref({
     date: '',
     category: '',
     author: '',
-    content: '', // Полный текст статьи
+    content: '',
     status: 'pending'
+})
+
+// Настраиваем marked для обработки ссылок и изображений
+marked.use({
+    gfm: true,
+    breaks: true,
+    mangle: false,
+    headerIds: false
+})
+
+// Создаем вычисляемое свойство для преобразованного HTML
+const parsedContent = computed(() => {
+    if (!newsData.value.content) return ''
+    const html = marked(newsData.value.content)
+    return DOMPurify.sanitize(html)
 })
 
 // В реальном приложении здесь будет API-запрос
@@ -27,11 +44,25 @@ onMounted(() => {
         date: "04.02.2025",
         category: "Категория",
         author: "Автор статьи",
-        content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        content: `# Заголовок статьи
 
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Это пример **форматированного** текста с *курсивом* и [ссылкой](https://example.com).
 
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.`,
+## Подзаголовок
+
+- Пункт списка 1
+- Пункт списка 2
+- Пункт списка 3
+
+### Код
+
+\`\`\`javascript
+console.log('Hello, World!');
+\`\`\`
+
+> Это цитата из текста
+
+![Пример изображения](https://example.com/image.jpg)`,
         status: 'pending'
     }
 })
@@ -79,13 +110,7 @@ const handleReject = () => {
                 </div>
             </div>
 
-            <div class="news-content">
-                <p class="description">{{ newsData.description }}</p>
-                <div class="content">
-                    <p v-for="(paragraph, index) in newsData.content.split('\n\n')" 
-                       :key="index">{{ paragraph }}</p>
-                </div>
-            </div>
+            <div class="news-content markdown-body" v-html="parsedContent"></div>
         </div>
     </div>
 </template>
@@ -192,22 +217,6 @@ const handleReject = () => {
     font-size: 14px;
 }
 
-.news-content {
-    font-size: 18px;
-    line-height: 1.6;
-    color: #333;
-}
-
-.description {
-    font-size: 20px;
-    color: #666;
-    margin-bottom: 24px;
-}
-
-.content p {
-    margin-bottom: 16px;
-}
-
 @media (max-width: 767px) {
     .news-container {
         padding: 0 1rem;
@@ -215,14 +224,6 @@ const handleReject = () => {
 
     .title {
         font-size: 24px;
-    }
-
-    .news-content {
-        font-size: 16px;
-    }
-
-    .description {
-        font-size: 18px;
     }
 
     .btns-container {
@@ -235,6 +236,159 @@ const handleReject = () => {
 
     .action-button {
         flex: 1;
+    }
+}
+</style>
+
+<style>
+.markdown-body {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #333;
+}
+
+.markdown-body h1 {
+    font-size: 2.5em;
+    margin: 24px 0;
+    font-weight: 600;
+}
+
+.markdown-body h2 {
+    font-size: 2em;
+    margin: 20px 0;
+    font-weight: 600;
+}
+
+.markdown-body h3 {
+    font-size: 1.5em;
+    margin: 16px 0;
+    font-weight: 600;
+}
+
+.markdown-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 24px 0;
+}
+
+.markdown-body p {
+    margin: 16px 0;
+}
+
+.markdown-body a {
+    color: #0066FF;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.markdown-body a:hover {
+    color: #0052CC;
+    text-decoration: underline;
+}
+
+.markdown-body strong {
+    font-weight: 600;
+}
+
+.markdown-body blockquote {
+    margin: 24px 0;
+    padding: 16px 24px;
+    border-left: 4px solid #0066FF;
+    background: rgba(0, 102, 255, 0.05);
+    border-radius: 4px;
+    font-style: italic;
+}
+
+.markdown-body blockquote p {
+    margin: 0;
+}
+
+.markdown-body ul, .markdown-body ol {
+    margin: 16px 0;
+    padding-left: 24px;
+}
+
+.markdown-body li {
+    margin: 8px 0;
+}
+
+.markdown-body code {
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+}
+
+.markdown-body pre {
+    background: #f5f5f5;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 16px 0;
+}
+
+.markdown-body pre code {
+    background: none;
+    padding: 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+}
+
+.markdown-body table th,
+.markdown-body table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.markdown-body table th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.markdown-body hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 32px 0;
+}
+
+@media (max-width: 767px) {
+    .markdown-body {
+        font-size: 16px;
+    }
+
+    .markdown-body h1 {
+        font-size: 2em;
+    }
+
+    .markdown-body h2 {
+        font-size: 1.5em;
+    }
+
+    .markdown-body h3 {
+        font-size: 1.25em;
+    }
+
+    .markdown-body blockquote {
+        padding: 12px 16px;
+        margin: 16px 0;
+    }
+
+    .markdown-body pre {
+        padding: 12px;
+    }
+
+    .markdown-body table th,
+    .markdown-body table td {
+        padding: 8px;
     }
 }
 </style> 

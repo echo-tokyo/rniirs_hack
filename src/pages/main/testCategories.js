@@ -1,14 +1,14 @@
 export const testCategories = [
   {
     id: 1,
-    data: 'Лооооол',
+    data: 'Математика',
   },
   {
     id: 2,
-    data: 'Сучка',
+    data: 'Химия',
   },
   {
     id: 3,
-    data: 'Залупа',
+    data: 'Айти',
   },
 ]

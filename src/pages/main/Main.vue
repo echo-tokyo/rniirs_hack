@@ -32,6 +32,13 @@ const filteredNews = computed(() => {
 
   if (selectedCategory.value) {
     result = result.filter((news) => news?.category?.title === selectedCategory.value)
+  } 
+
+  // Если после фильтрации по категории нет результатов, сбрасываем фильтр по источнику
+  if (result.length === 0 && selectedCity.value) {
+    selectedCity.value = ''
+    console.log('data.news', data.news)
+    return data.news
   }
 
   if (selectedCity.value) {
@@ -54,7 +61,10 @@ const filteredNews = computed(() => {
 
   return result
 })
-
+if(filteredNews.value.length === 0){
+      selectedCity.value = ''
+      console.log('filteredNews', filteredNews.value)
+}
 // отслеживание изменения селектов
 watch([selectedCategory, selectedCity, selectedSort], ([category, city, sort]) => {
   console.log({

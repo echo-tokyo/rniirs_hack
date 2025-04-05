@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { testData } from '../main/testData'
+import html2pdf from 'html2pdf.js'
 
 const isAdmin = localStorage.getItem('isAdmin')
 const route = useRoute()
@@ -11,6 +12,10 @@ const router = useRouter()
 const id = route.params.id
 const newsData = ref({})
 const isLoaded = ref(false)
+const contentRef = ref(null)
+const isPdfButtonVisible = ref(true)
+const isBackButtonVisible = ref(true)
+const increaseMargin = ref(false)
 
 // Настраиваем marked для обработки ссылок и изображений
 marked.use({
@@ -49,13 +54,52 @@ const handleReject = () => {
 const newsDelete = () => {
   router.push({name: 'main'})
 }
+
+const handleBack = () => {
+  // Скрываем кнопку на некоторое время
+  isBackButtonVisible.value = false
+  setTimeout(() => {
+    isBackButtonVisible.value = true
+  }, 2000) // Показать кнопку снова через 2 секунды
+  
+  // Возвращаемся назад
+  router.back()
+}
+
+const exportToPdf = () => {
+  // Скрываем обе кнопки на некоторое время
+  isPdfButtonVisible.value = false
+  isBackButtonVisible.value = false
+  
+  // Увеличиваем margin-top на 80px
+  increaseMargin.value = true
+  
+  setTimeout(() => {
+    isPdfButtonVisible.value = true
+    isBackButtonVisible.value = true
+    increaseMargin.value = false
+  }, 3000) // Показать кнопки снова через 3 секунды
+  
+  const content = contentRef.value
+  const filename = `${newsData.value.title || 'news'}.pdf`
+  
+  const options = {
+    margin: 10,
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }
+  
+  html2pdf().from(content).set(options).save()
+}
 </script>
 
 <template>
   <div v-if='isLoaded' class="news-page">
-    <div class="news-container">
-      <div class="btns-container">
-        <button class="back-button" @click="$router.back()">
+    <div class="news-container" ref="contentRef" :class="{ 'increased-margin': increaseMargin }">
+      <div class="btns-container no-print">
+        <button v-if="isBackButtonVisible" class="back-button" @click="handleBack">
           <span>←</span> Назад
         </button>
         <div v-if="isAdmin && newsData.status === 'pending'" class="admin-controls">
@@ -66,9 +110,15 @@ const newsDelete = () => {
             Отклонить
           </button>
         </div>
+        <button v-if="isPdfButtonVisible" class="pdf-button" @click="exportToPdf">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/>
+          </svg>
+          Скачать PDF
+        </button>
       </div>
       
-      <div class="news-header">
+      <div class="news-header no-print">
         <h1 class="title">{{ newsData.title }}</h1>
         <div class="meta-info">
           <span class="date">{{ newsData.date }}</span>
@@ -80,7 +130,7 @@ const newsDelete = () => {
       <div class="news-content markdown-body" v-html="parsedContent"></div>
     </div>
 
-    <button v-if='!isAdmin' class="delete-button" @click="newsDelete">
+    <button v-if='!isAdmin' class="delete-button no-print" @click="newsDelete">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
       </svg>
@@ -103,6 +153,11 @@ img{
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 2rem;
+  transition: margin-top 0.3s ease;
+}
+
+.increased-margin {
+  margin-top: 40px !important;
 }
 
 .btns-container {
@@ -125,6 +180,26 @@ img{
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.pdf-button {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  background: #1E88E5;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pdf-button:hover {
+  background: #1565C0;
 }
 
 .action-button.approve {
@@ -219,6 +294,21 @@ img{
   font-size: 14px;
 }
 
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .news-page {
+    background: white;
+    padding: 0;
+  }
+  
+  .news-container {
+    padding: 0;
+  }
+}
+
 @media (max-width: 767px) {
   .news-container {
     padding: 0 1rem;
@@ -238,6 +328,13 @@ img{
 
   .action-button {
     flex: 1;
+  }
+  
+  .pdf-button {
+    width: 100%;
+    margin-left: 0;
+    justify-content: center;
+    order: 3;
   }
 
   .delete-button {

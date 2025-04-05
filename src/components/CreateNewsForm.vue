@@ -1,18 +1,25 @@
 <script setup>
 import { ref } from 'vue'
+import { CustomSelect } from '@/components'
+import { testCategories } from '@/pages/main/testCategories'
 
 const title = ref('')
 const content = ref('')
+const selectedCategory = ref('')
 
 const emit = defineEmits(['submit'])
+
+const categoryOptions = testCategories.map(cat => cat.data)
 
 const handleSubmit = () => {
   emit('submit', {
     title: title.value,
-    content: content.value
+    content: content.value,
+    category: selectedCategory.value
   })
   title.value = ''
   content.value = ''
+  selectedCategory.value = ''
 }
 </script>
 
@@ -24,6 +31,14 @@ const handleSubmit = () => {
         type="text"
         placeholder="Название новости"
         class="form-input"
+      />
+    </div>
+    <div class="form-group">
+      <CustomSelect
+        v-model="selectedCategory"
+        :options="categoryOptions"
+        placeholder="Выберите категорию"
+        class="category-select"
       />
     </div>
     <div class="form-group">
@@ -77,6 +92,10 @@ const handleSubmit = () => {
 .form-input::placeholder,
 .form-textarea::placeholder {
   color: #999;
+}
+
+.category-select {
+  width: 100%;
 }
 
 .submit-button {

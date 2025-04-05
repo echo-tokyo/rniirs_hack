@@ -109,6 +109,8 @@ const toggleSelect = (event) => {
   cursor: pointer;
   font-size: 16px;
   color: #333;
+  border: 1px solid #E0E0E0;
+  border-radius: 20px;
 }
 
 .select-header {
@@ -119,7 +121,7 @@ const toggleSelect = (event) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
 .arrow {
@@ -137,6 +139,7 @@ const toggleSelect = (event) => {
   left: 0;
   width: 100%;
   background: white;
+  border: 1px solid #E0E0E0;
   border-radius: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   z-index: 10;
