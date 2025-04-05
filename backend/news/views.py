@@ -111,3 +111,36 @@ class NewsParsAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class NewsFavoriteGETAPIView(APIView):
+
+    permission_classes = (IsAuthenticated, )
+
+    @staticmethod
+    def get(request):
+        news = News.objects.all().filter(is_confirmed=True, liked=True)
+        serializer = NewsSerializer(news, many=True)
+        return Response(serializer.data)
+
+class NewsFavoritePOSTAPIView(APIView):
+
+    permission_classes = (IsAuthenticated, )
+
+    @staticmethod
+    def patch(request, pk, favorite):
+        instance = get_object_or_404(News, pk=pk)
+
+        if favorite == "like":
+            instance.liked.add(request.user)
+        elif favorite == "unlike":
+            instance.liked.remove(request.user)
+        else:
+            return Response({"error": "invalid favorite path param was given"}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = NewsSerializer(instance=instance, data={}, partial=True)
+
+        if serializer.is_valid():
+            serializer.update(instance, {})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -29,6 +29,7 @@ class NewsSerializer(serializers.Serializer):
     category_id = serializers.IntegerField()
     is_confirmed = serializers.BooleanField(default=False, required=False)
     author_id = serializers.IntegerField()
+    liked = serializers.BooleanField()
 
     # Добавляем поле author как "read-only" и динамическое
     author = serializers.SerializerMethodField()
