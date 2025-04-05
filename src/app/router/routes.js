@@ -1,4 +1,4 @@
-import { Main, SignIn } from "@/pages";
+import { Main, SignIn, NewsPage } from "@/pages";
 
 export const routes = [
   {
@@ -11,4 +11,10 @@ export const routes = [
     name: 'main',
     component: Main,
   },
+  {
+    path: '/news/:id',
+    name: 'news',
+    component: NewsPage,
+    props: true
+  }
 ];

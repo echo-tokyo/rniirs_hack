@@ -4,10 +4,14 @@ const props = defineProps({
     description: String,
     date: String,
     category: String,
+    id: {
+        type: [String, Number],
+        required: true
+    }
 })
 </script>
 <template>
-<div class="NewsCard-container">
+<div class="NewsCard-container" @click="$router.push(`/news/${props.id}`)">
     <div class="NewsCard-information">
         <div class="News-information__text">
             <h2 class="NewsCard-information__header">{{ props.header }}</h2>
@@ -32,6 +36,13 @@ const props = defineProps({
     height: 180px;
     display: flex;
     position: relative;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.NewsCard-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .NewsCard-information {

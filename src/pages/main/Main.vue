@@ -47,7 +47,13 @@ const sortOptions = [
     </div>
   </div>
   <div class="NewsContainer">
-    <NewsCard header="НОУ ВЭЙ, ЧИКИПИКИ" description="АЛИНЫ ЧИКИ ПИКИ ГЕТ ДИС ВОРЛД АУТ, НО ВЭЙ ВАТАКАК СМОТРИТЕ" date="03.05.2024" category="Спортивный интерес"></NewsCard>
+    <NewsCard 
+      id="1"
+      header="НОУ ВЭЙ, ЧИКИПИКИ" 
+      description="АЛИНЫ ЧИКИ ПИКИ ГЕТ ДИС ВОРЛД АУТ, НО ВЭЙ ВАТАКАК СМОТРИТЕ" 
+      date="03.05.2024" 
+      category="Спортивный интерес"
+    />
   </div>
 </template>
 
