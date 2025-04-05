@@ -1,7 +1,10 @@
 <script setup>
+import { ref } from 'vue'
 import { CustomSelect, NewsCard } from "@/components"
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import Modal from '@/components/Modal.vue'
+import CreateNewsForm from '@/components/CreateNewsForm.vue'
 
 const router = useRouter()
 const isAdmin = localStorage.getItem('isAdmin')
@@ -35,6 +38,13 @@ const sortOptions = [
   'По рейтингу',
   'По отзывам'
 ]
+
+const isModalOpen = ref(false)
+
+const handleCreateNews = (newsData) => {
+  console.log('Создана новость:', newsData)
+  isModalOpen.value = false
+}
 </script>
 
 <template>
@@ -47,15 +57,17 @@ const sortOptions = [
         />
         <CustomSelect 
           :options="cityOptions"
-          placeholder="Выберите город"
+          placeholder="Искать из источника"
         />
         <CustomSelect 
           :options="sortOptions"
-          placeholder="Сортировка"
+          placeholder="Сортировать по дате"
         />
       </div>
       <button v-if='isAdmin' class="requests-button">Запросы</button>
-      <button class="create-button">Создать новость</button>
+      <button class="create-button" @click="isModalOpen = true">
+        Создать новость
+      </button>
     </div>
   </div>
   <div class="NewsContainer">
@@ -67,6 +79,13 @@ const sortOptions = [
       category="Спортивный интерес"
     />
   </div>
+
+  <Modal 
+    :is-open="isModalOpen"
+    @close="isModalOpen = false"
+  >
+    <CreateNewsForm @submit="handleCreateNews" />
+  </Modal>
 </template>
 
 <style scoped>
