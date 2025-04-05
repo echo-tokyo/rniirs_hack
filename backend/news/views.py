@@ -25,20 +25,22 @@ class NewsAPIView(APIView):
 
     @staticmethod
     def get(request):
+        if not request.user.is_superuser and not request.query_params:
+            news = News.objects.all().filter(is_confirmed=True)
+            serializer = NewsSerializer(news, many=True)
+            return Response(serializer.data)
+
         if request.query_params.get('confirmed') == "False" and request.user.is_superuser:
             news = News.objects.all().filter(is_confirmed=False)
             serializer = NewsSerializer(news, many=True)
             return Response(serializer.data)
 
-        elif not request.query_params.get('user_id') == request.user.id:
-            news = News.objects.all().filter(author_id=request.user.id)
+        if request.query_params.get('user_id') == str(request.user.id):
+            news = News.objects.all().filter(user_id=request.user.id)
             serializer = NewsSerializer(news, many=True)
             return Response(serializer.data)
 
-        else:
-            news = News.objects.all().filter(is_confirmed=True)
-            serializer = NewsSerializer(news, many=True)
-            return Response(serializer.data)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
     @staticmethod
     def post(request):
