@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Callable
 from datetime import datetime
 
 class BaseParser(ABC):
@@ -19,4 +19,9 @@ class BaseParser(ABC):
     @abstractmethod
     def source_name(self) -> str:
         """Возвращает название источника новостей"""
+        pass
+
+    @abstractmethod
+    def set_send_callback(self, callback: Callable):
+        """Устанавливает функцию для отправки данных"""
         pass 

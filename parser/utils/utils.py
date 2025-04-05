@@ -5,6 +5,6 @@ def format_news_item(news, detail):
         'category': news['category'],
         'link': news['link'],
         'date': detail['date'],
-        'source': detail['source'],
-        'content': detail['content']
+        'author': detail['author'],
+        'description': detail['description']
     }
