@@ -1,4 +1,6 @@
 <script setup>
+import { ref } from 'vue'
+
 const props = defineProps({
     header: String,
     description: String,
@@ -9,6 +11,12 @@ const props = defineProps({
         required: true
     }
 })
+
+const isFavorite = ref(false)
+
+const toggleFavorite = () => {
+    isFavorite.value = !isFavorite.value
+}
 </script>
 <template>
 <div class="NewsCard-container" @click="$router.push(`/news/${props.id}`)">
@@ -18,7 +26,14 @@ const props = defineProps({
             <h2 class="NewsCard-information__description">{{ props.description }}</h2>
         </div>
 
-        <h2 class="NewsCard-information__date">{{ props.date }}</h2>
+        <div class="NewsCard-bottom">
+            <h2 class="NewsCard-information__date">{{ props.date }}</h2>
+            <button class="heart-button" :class="{ 'is-favorite': isFavorite }" @click.stop="toggleFavorite">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/>
+                </svg>
+            </button>
+        </div>
     </div>
     <div class="NewsCard-category">
         <h2 class="NewsCard-category__category">{{ props.category }}</h2>
@@ -41,7 +56,6 @@ const props = defineProps({
 }
 
 .NewsCard-container:hover {
-    transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -83,11 +97,57 @@ const props = defineProps({
     line-height: 1.4;
 }
 
+.NewsCard-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
 .NewsCard-information__date {
     font-size: 12px;
     color: #999;
     margin: 0;
-    margin-top: 10px;
+}
+
+.heart-button {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border-radius: 50%;
+}
+
+.heart-button:hover {
+    color: #ff4757;
+    background: rgba(255, 71, 87, 0.1);
+}
+
+.heart-button:active {
+    transform: scale(0.85);
+}
+
+.heart-button svg {
+    transform-origin: center;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.heart-button.is-favorite {
+    color: #ff4757;
+    background: rgba(255, 71, 87, 0.1);
+}
+
+.heart-button.is-favorite svg {
+    transform: scale(1.1);
+}
+
+.heart-button.is-favorite:hover {
+    background: rgba(255, 71, 87, 0.2);
 }
 
 .NewsCard-category {
