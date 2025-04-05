@@ -62,9 +62,9 @@ class NaukaRfParser(BaseParser):
 
     async def _parse_date(self, date_str: str) -> str:
         """
-        Преобразует строку даты в формат DD.MM.YYYY
+        Преобразует строку даты в формат YYYY-MM-DD
         Вход: "5 апреля 2025"
-        Выход: "05.04.2025"
+        Выход: "2025-04-05"
         """
         self.logger.debug(f"Парсинг даты: {date_str}")
         try:

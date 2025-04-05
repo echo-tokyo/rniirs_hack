@@ -1,10 +1,6 @@
 # Используем Python 3.11
 FROM python:3.12.1
 
-<<<<<<< HEAD
-=======
-#
->>>>>>> 381f834 (Date format changed tp Yy-Mm-Dd | Fixed Dockerfile)
 SHELL ["/bin/sh", "-c"]
 
 # Устанавливаем cron
@@ -29,13 +25,8 @@ RUN crontab /etc/cron.d/parser-cron
 # Создаем лог файл и даем права на запись
 RUN touch /var/log/cron.log && chmod 0666 /var/log/cron.log
 
-<<<<<<< HEAD
 # Копируем весь код парсера
 COPY . .
 
 # Используем JSON формат для CMD
 ENTRYPOINT ["sh", "./start.sh"]
-=======
-# Используем JSON формат для CMD
-ENTRYPOINT ["sh", "./start.sh"]
->>>>>>> 381f834 (Date format changed tp Yy-Mm-Dd | Fixed Dockerfile)
