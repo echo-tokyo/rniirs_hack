@@ -29,8 +29,7 @@ urlpatterns = [
     path('api/users/', CustomUserAPIView.as_view(), name='users'),
     path('api/categories/', CategoryAPIView.as_view(), name='categories'),
 
-    re_path(r'^api/news(/(?P<pk>\d+))?/?$', NewsAPIView.as_view(), name='stock'),
-
+    re_path(r'^api/news(/(?P<pk>\d+))?/?$', NewsAPIView.as_view(), name='news'),
 
     path('api/news/favorite/', NewsFavoriteGETAPIView.as_view()),
     # favorite param may be one of "like" ore "unlike"

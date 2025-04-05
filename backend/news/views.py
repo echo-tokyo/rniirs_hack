@@ -24,7 +24,9 @@ class NewsAPIView(APIView):
     permission_classes = (IsAuthenticated, )
 
     @staticmethod
-    def get(request, pk):
+    def get(request, **kwargs):
+        pk = kwargs.get("pk", None)
+
         if pk:
             news = News.objects.get(pk=pk)
             serializer = NewsSerializer(news, many=False)
