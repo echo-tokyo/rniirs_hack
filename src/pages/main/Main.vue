@@ -1,5 +1,5 @@
 <script setup>
-
+import { CustomSelect, NewsCard } from "@/components"
 const selectOptions = [
   'Все категории',
   'Название категории',
@@ -26,6 +26,7 @@ const sortOptions = [
 </script>
 
 <template>
+
   <div class="app">
     <div class="container">
       <div class="selects-container">
@@ -44,6 +45,9 @@ const sortOptions = [
       </div>
       <button class="create-button">Создать новость</button>
     </div>
+  </div>
+  <div class="NewsContainer">
+    <NewsCard header="НОУ ВЭЙ, ЧИКИПИКИ" description="АЛИНЫ ЧИКИ ПИКИ ГЕТ ДИС ВОРЛД АУТ, НО ВЭЙ ВАТАКАК СМОТРИТЕ" date="03.05.2024" category="Спортивный интерес"></NewsCard>
   </div>
 </template>
 
@@ -88,6 +92,13 @@ const sortOptions = [
   background: #0052cc;
 }
 
+.NewsContainer {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
 @media (min-width: 768px) {
   .container {
 
@@ -101,6 +112,10 @@ const sortOptions = [
 @media (max-width: 767px) {
   .container {
     padding: 1rem;
+  }
+
+  .NewsContainer {
+    padding: 0 1rem;
   }
 
   .selects-container {

@@ -79,7 +79,6 @@ const toggleSelect = (event) => {
   cursor: pointer;
   font-size: 16px;
   color: #333;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
 .select-header {
