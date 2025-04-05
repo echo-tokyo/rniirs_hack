@@ -62,9 +62,9 @@ class NaukaRfParser(BaseParser):
 
     async def _parse_date(self, date_str: str) -> str:
         """
-        Преобразует строку даты в формат DD.MM.YYYY
+        Преобразует строку даты в формат YYYY-MM-DD
         Вход: "5 апреля 2025"
-        Выход: "05.04.2025"
+        Выход: "2025-04-05"
         """
         self.logger.debug(f"Парсинг даты: {date_str}")
         try:
@@ -79,7 +79,7 @@ class NaukaRfParser(BaseParser):
             day = day.zfill(2)
             month_num = months[month.lower()]
             
-            result = f"{day}-{month_num}-{year}"
+            result = f"{year}-{month_num}-{day}"
             self.logger.debug(f"Дата успешно преобразована: {result}")
             return result
         except Exception as e:
@@ -282,17 +282,17 @@ class NaukaRfParser(BaseParser):
             
             category = response.choices[0].message.content.strip()
             
-            self.logger.debug(f"Полученная категория: {category}")
+            # self.logger.debug(f"Полученная категория: {category}")
             
             # Проверяем, что полученная категория есть в списке
             if category in self.categories:
                 self.logger.debug(f"Определена категория '{category}' для новости '{title}'")
                 return category
             else:
-                self.logger.warning(f"Получена некорректная категория '{category}', используем дефолтную")
+                # self.logger.warning(f"Получена некорректная категория '{category}', используем дефолтную")
                 return "Новости Фонда"
                 
         except Exception as e:
-            self.logger.error(f"Ошибка при определении категории: {e}")
+            # self.logger.error(f"Ошибка при определении категории: {e}")
             return "Новости Фонда"
 

@@ -87,7 +87,7 @@ class RscfParser(BaseParser):
                                 'title': item.find('a', class_='news-title').text.strip(),
                                 'category': item.find('a', class_='news-category').text.strip(),
                                 'link': item.find('a', class_='news-title')['href'],
-                                'author': 'РНФЦ'  # Добавляем автора сразу
+                                'author': 'РНФ'  # Добавляем автора сразу
                             }
                             news_items.append(news)
                         
@@ -215,9 +215,9 @@ class RscfParser(BaseParser):
 
     def _parse_date(self, date_str: str) -> str:
         """
-        Преобразует строку даты в формат DD-MM-YYYY
+        Преобразует строку даты в формат YYYY-MM-DD
         Вход: "5 апреля, 2025"
-        Выход: "05-04-2025"
+        Выход: "2025-04-05"
         """
         if not date_str:
             return None
@@ -230,7 +230,7 @@ class RscfParser(BaseParser):
                 return None
             
             # Добавляем ведущий ноль к дню и месяцу
-            return f"{day.zfill(2)}-{month_num.zfill(2)}-{year}"
+            return f"{year}-{month_num.zfill(2)}-{day.zfill(2)}"
         except Exception as e:
             return None 
 
