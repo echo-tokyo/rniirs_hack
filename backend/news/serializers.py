@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
 from .models import *
+from users.models import CustomUser
+from django.conf import settings
 
 
 class CategorySerializer(serializers.Serializer):
@@ -19,7 +21,7 @@ class CategorySerializer(serializers.Serializer):
         return instance
 
 
-class NewsSerializer(serializers.Serializer):
+class   NewsSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(max_length=255)
     description = serializers.CharField()
@@ -47,16 +49,15 @@ class NewsParsSerializer(serializers.Serializer):
     date = serializers.DateField(required=False)
     category = serializers.CharField()
     is_confirmed = serializers.BooleanField(default=True, required=False)
-    author_id = serializers.IntegerField(default=1, required=False)
+    author = serializers.CharField(required=False)
 
     def save(self, validated_data):
-
         return News.objects.create(title=validated_data.get("title"),
                                    description=validated_data.get("description"),
                                    date=validated_data.get("date"),
                                    category=Category.objects.get_or_create(**validated_data.get("category")),
                                    is_confirmed=validated_data.get("is_confirmed"),
-                                   author_id=validated_data.get("author_id"),
+                                   author=CustomUser.objects.get_or_create(login=validated_data.get("author"), password=settings.PARSER_PASSWORD),
                                    )
 
     def update(self, instance, validated_data):
