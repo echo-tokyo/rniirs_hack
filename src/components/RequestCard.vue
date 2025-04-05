@@ -12,14 +12,33 @@ const props = defineProps({
     }
 })
 
-const isFavorite = ref(false)
+const emit = defineEmits(['approve', 'reject'])
 
-const toggleFavorite = () => {
-    isFavorite.value = !isFavorite.value
+const handleApprove = (e) => {
+    e.stopPropagation()
+    emit('approve', {
+        id: props.id,
+        header: props.header,
+        description: props.description,
+        date: props.date,
+        category: props.category
+    })
+}
+
+const handleReject = (e) => {
+    e.stopPropagation()
+    emit('reject', {
+        id: props.id,
+        header: props.header,
+        description: props.description,
+        date: props.date,
+        category: props.category
+    })
 }
 </script>
+
 <template>
-<div class="NewsCard-container" @click="$router.push(`/news/${props.id}`)">
+<div class="NewsCard-container" @click="$router.push(`/requests/${props.id}`)">
     <div class="NewsCard-information">
         <div class="News-information__text">
             <h2 class="NewsCard-information__header">{{ props.header }}</h2>
@@ -28,11 +47,18 @@ const toggleFavorite = () => {
 
         <div class="NewsCard-bottom">
             <h2 class="NewsCard-information__date">{{ props.date }}</h2>
-            <button class="heart-button" :class="{ 'is-favorite': isFavorite }" @click.stop="toggleFavorite">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/>
-                </svg>
-            </button>
+            <div class="action-buttons">
+                <button class="action-button approve" @click="handleApprove">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button class="action-button reject" @click="handleReject">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="currentColor"/>
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
     <div class="NewsCard-category">
@@ -110,12 +136,16 @@ const toggleFavorite = () => {
     margin: 0;
 }
 
-.heart-button {
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.action-button {
     background: none;
     border: none;
     padding: 8px;
     cursor: pointer;
-    color: #999;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -123,18 +153,24 @@ const toggleFavorite = () => {
     border-radius: 50%;
 }
 
-.heart-button:hover {
-    color: #ff4757;
-    background: rgba(255, 71, 87, 0.1);
+.action-button:active {
+    transform: scale(0.85);
 }
 
-.heart-button.is-favorite {
-    color: #ff4757;
-    background: rgba(255, 71, 87, 0.1);
+.action-button.approve {
+    color: #4CAF50;
 }
 
-.heart-button.is-favorite:hover {
-    background: rgba(255, 71, 87, 0.2);
+.action-button.approve:hover {
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.action-button.reject {
+    color: #FF5252;
+}
+
+.action-button.reject:hover {
+    background: rgba(255, 82, 82, 0.1);
 }
 
 .NewsCard-category {

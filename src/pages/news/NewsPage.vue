@@ -9,7 +9,8 @@ const newsData = ref({
   header: '',
   description: '',
   date: '',
-  category: ''
+  category: '',
+  status: 'pending'
 })
 
 onMounted(() => {
@@ -19,20 +20,34 @@ onMounted(() => {
       description: "АЛИНЫ ЧИКИ ПИКИ ГЕТ ДИС ВОРЛД АУТ, НО ВЭЙ ВАТАКАК СМОТРИТЕ",
       date: "03.05.2024",
       category: "Спортивный интерес",
-      author: "ФНР"
+      author: "ФНР",
+      status: 'pending'
     }
   }
   
-  const id = route.params.id // Use route here
+  const id = route.params.id
   if (mockData[id]) {
     newsData.value = mockData[id]
   }
 })
 
+const handleApprove = () => {
+  // Здесь будет логика одобрения новости
+  console.log('Новость одобрена')
+  router.push('/requests')
+}
+
+const handleReject = () => {
+  // Здесь будет логика отклонения новости
+  console.log('Новость отклонена')
+  router.push('/requests')
+}
+
 const newsDelete = () => {
-  router.push({name: 'main'}) // Now this will work
+  router.push({name: 'main'})
 }
 </script>
+
 <template>
   <div class="news-page">
     <div class="news-container">
@@ -40,7 +55,15 @@ const newsDelete = () => {
         <button class="back-button" @click="$router.back()">
           <span>←</span> Назад
         </button>
-        <button v-if='isAdmin' class="delete-button" @click="newsDelete()">
+        <div v-if="isAdmin && newsData.status === 'pending'" class="admin-controls">
+          <button class="action-button approve" @click="handleApprove">
+            Принять
+          </button>
+          <button class="action-button reject" @click="handleReject">
+            Отклонить
+          </button>
+        </div>
+        <button v-if='!isAdmin' class="delete-button" @click="newsDelete()">
           Удалить
         </button>
       </div>
@@ -74,11 +97,44 @@ const newsDelete = () => {
   padding: 0 2rem;
 }
 
-.btns-container{
+.btns-container {
   display: flex;
   align-items: center;
   gap: 20px;
   margin-bottom: 2rem;
+}
+
+.admin-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.action-button {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-button.approve {
+  background: #4CAF50;
+  color: white;
+}
+
+.action-button.approve:hover {
+  background: #43A047;
+}
+
+.action-button.reject {
+  background: #FF5252;
+  color: white;
+}
+
+.action-button.reject:hover {
+  background: #D32F2F;
 }
 
 .back-button {
@@ -144,6 +200,18 @@ const newsDelete = () => {
 
   .news-content {
     font-size: 16px;
+  }
+
+  .btns-container {
+    flex-wrap: wrap;
+  }
+
+  .admin-controls {
+    width: 100%;
+  }
+
+  .action-button {
+    flex: 1;
   }
 }
 </style> 
