@@ -16,20 +16,13 @@ const isAdmin = localStorage.getItem('isAdmin')
 const selectOptions = ref([])
 
 const cityOptions = [
-  'Москва',
-  'Санкт-Петербург',
-  'Новосибирск',
-  'Екатеринбург',
-  'Казань',
-  'Нижний Новгород'
+  'РНФ',
+  'Наука.рф'
 ]
 
 const sortOptions = [
-  'По популярности',
-  'По возрастанию цены',
-  'По убыванию цены',
-  'По рейтингу',
-  'По отзывам'
+  'Новые',
+  'Старые'
 ]
 
 onMounted(() => {
@@ -42,7 +35,6 @@ onMounted(() => {
   // получили категории после запроса
   selectOptions.value = testCategories.map(el => el.data)
 })
-
 
 const isModalOpen = ref(false)
 

@@ -1,11 +1,11 @@
 export const testCategories = [
   {
     id: 1,
-    data: 'Наука',
+    data: 'Лооооол',
   },
   {
     id: 2,
-    data: 'Научпоп',
+    data: 'Сучка',
   },
   {
     id: 3,
