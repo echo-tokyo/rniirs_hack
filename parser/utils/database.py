@@ -11,7 +11,7 @@ async def send_to_database(items: list) -> bool:
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                'http://django_app:8000/api-dev/news/',
+                'http://djangoapp:8000/api-dev/news/',
                 json=items,
                 headers={'Content-Type': 'application/json'}
             ) as response:
