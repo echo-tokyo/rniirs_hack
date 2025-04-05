@@ -1,0 +1,1 @@
+* * * * * /home/wx/projects/rniirs_hack/parser/.venv/bin/python3 /home/wx/projects/rniirs_hack/parser/main.py >> /home/wx/projects/rniirs_hack/parser/cron.log 2>&1
