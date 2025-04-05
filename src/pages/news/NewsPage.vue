@@ -63,9 +63,6 @@ const newsDelete = () => {
             Отклонить
           </button>
         </div>
-        <button v-if='!isAdmin' class="delete-button" @click="newsDelete()">
-          Удалить
-        </button>
       </div>
       
       <div class="news-header">
@@ -81,6 +78,13 @@ const newsDelete = () => {
         <p>{{ newsData.description }}</p>
       </div>
     </div>
+
+    <button v-if='!isAdmin' class="delete-button" @click="newsDelete">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
+      </svg>
+      Удалить
+    </button>
   </div>
 </template>
 
@@ -135,6 +139,34 @@ const newsDelete = () => {
 
 .action-button.reject:hover {
   background: #D32F2F;
+}
+
+.delete-button {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 1px solid #FF5252;
+  background: white;
+  color: #FF5252;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.delete-button:hover {
+  background: rgba(255, 82, 82, 0.1);
+  transform: translateY(-2px);
+}
+
+.delete-button:active {
+  transform: translateY(0);
 }
 
 .back-button {
@@ -212,6 +244,12 @@ const newsDelete = () => {
 
   .action-button {
     flex: 1;
+  }
+
+  .delete-button {
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
   }
 }
 </style> 
