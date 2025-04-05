@@ -36,7 +36,7 @@ class NewsAPIView(APIView):
             return Response(serializer.data)
 
         if request.query_params.get('user_id') == str(request.user.id):
-            news = News.objects.all().filter(user_id=request.user.id)
+            news = News.objects.all().filter(author_id=request.user.id)
             serializer = NewsSerializer(news, many=True)
             return Response(serializer.data)
 
