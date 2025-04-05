@@ -98,3 +98,16 @@ class NewsAPIView(APIView):
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class NewsParsAPIView(APIView):
+
+    @staticmethod
+    def post(request):
+
+        serializer = NewsSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(request.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

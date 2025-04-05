@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from users.views import CustomUserAPIView
-from news.views import NewsAPIView, CategoryAPIView
+from news.views import NewsAPIView, CategoryAPIView, NewsParsAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,5 +29,7 @@ urlpatterns = [
     path('api/users/', CustomUserAPIView.as_view(), name='users'),
     path('api/categories/', CategoryAPIView.as_view(), name='categories'),
     path('api/news/', NewsAPIView.as_view(), name='news'),
+
+    path('api-dev/news/', NewsParsAPIView.as_view(), name='newspars'),
 
 ]

@@ -11,6 +11,8 @@ services:
     restart: always
     ports:
       - 81:80
+    networks:
+      main: 
     depends_on:
       - django_app
 
@@ -25,6 +27,8 @@ services:
       - backend/.env
     ports:
       - "8000:8000"
+    networks:
+      main:
     depends_on:
       - db
 
@@ -34,8 +38,13 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
       - MYSQL_DATABASE=${DB_NAME}
+    networks:
+      main:
     volumes:
       - my_mysql_volume:/var/lib/mysql
+
+networks:
+  main:
 
 volumes:
   my_mysql_volume:
