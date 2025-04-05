@@ -1,6 +1,6 @@
 <script setup>
-import { ref, watch } from 'vue'
-import { CustomSelect, NewsCard } from "@/components"
+import { ref, watch, computed } from 'vue'
+import { CustomSelect, NewsCard } from '@/components'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Modal from '@/components/Modal.vue'
@@ -18,34 +18,61 @@ const selectedCategory = ref('')
 const selectedCity = ref('')
 const selectedSort = ref('')
 
-const cityOptions = [
-  'РНФ',
-  'Наука.рф'
-]
+const cityOptions = ['РНФ', 'Наука.рф']
+const sortOptions = ['Новые', 'Старые']
 
-const sortOptions = [
-  'Новые',
-  'Старые'
-]
+// фильтрация новостей
+const filteredNews = computed(() => {
+  if (!data.news || !Array.isArray(data.news)) {
+    return []
+  }
 
-// Следим за изменениями всех селектов
+  let result = [...data.news]
+
+  if (selectedCategory.value) {
+    result = result.filter((news) => news?.category?.title === selectedCategory.value)
+  }
+
+  if (selectedCity.value) {
+    result = result.filter((news) => news?.author.login === selectedCity.value)
+  }
+
+  if (selectedSort.value === 'Новые') {
+    result.sort((a, b) => {
+      const dateA = new Date(a?.date || 0)
+      const dateB = new Date(b?.date || 0)
+      return dateB - dateA
+    })
+  } else if (selectedSort.value === 'Старые') {
+    result.sort((a, b) => {
+      const dateA = new Date(a?.date || 0)
+      const dateB = new Date(b?.date || 0)
+      return dateA - dateB
+    })
+  }
+
+  return result
+})
+
+// отслеживание изменения селектов
 watch([selectedCategory, selectedCity, selectedSort], ([category, city, sort]) => {
   console.log({
     Категория: category || 'Не выбрано',
     Источник: city || 'Не выбрано',
-    Сортировка: sort || 'Не выбрано'
+    Сортировка: sort || 'Не выбрано',
   })
 })
 
+// загрузка ресурсов
 onMounted(() => {
-  if(!localStorage.getItem('token')){
-    router.push({name: 'signin'})
+  if (!localStorage.getItem('token')) {
+    router.push({ name: 'signin' })
   }
 
-  // получили данные после запроса (testData это response). сохранить в стейт менеджер
+  // после получения ресурсов
   data.updateNews(testData)
-  // получили категории после запроса
-  selectOptions.value = testCategories.map(el => el.data)
+  // после получения категорий
+  selectOptions.value = testCategories.map((el) => el?.data)
 })
 
 const isModalOpen = ref(false)
@@ -54,52 +81,52 @@ const handleCreateNews = (newsData) => {
   console.log('Создана новость:', newsData)
   isModalOpen.value = false
 }
-
 </script>
 
 <template>
   <div class="app">
     <div class="container">
       <div class="selects-container">
-        <CustomSelect 
+        <CustomSelect
           v-model="selectedCategory"
           :options="selectOptions"
           placeholder="Выберите категорию"
         />
-        <CustomSelect 
+        <CustomSelect
           v-model="selectedCity"
           :options="cityOptions"
           placeholder="Искать из источника"
         />
-        <CustomSelect 
+        <CustomSelect
           v-model="selectedSort"
           :options="sortOptions"
           placeholder="Сортировать по дате"
         />
       </div>
-      <button v-if='!isAdmin' class="requests-button" @click='router.push("/requests")'>Запросы</button>
-      <button class="create-button" @click="isModalOpen = true">
-        Создать новость
+      <button v-if="!isAdmin" class="requests-button" @click="router.push('/requests')">
+        Запросы
       </button>
+      <button class="create-button" @click="isModalOpen = true">Создать новость</button>
     </div>
   </div>
   <div class="NewsContainer">
-    <NewsCard v-for='item in data.news'
-    :key='item.id'
-    :id='item.id'
-    :header='item.title'
-    :description='item.description'
-    :date='item.date'
-    :category='item.category.title'
-    :is_liked='item.is_liked'
-    @update:is_liked="item.is_liked = $event"
-    />
+    <template v-if="filteredNews.length > 0">
+      <NewsCard
+        v-for="item in filteredNews"
+        :key="item.id"
+        :id="item.id"
+        :header="item.title"
+        :description="item.description"
+        :date="item.date"
+        :category="item.category?.title"
+        :is_liked="item.is_liked"
+        @update:is_liked="item.is_liked = $event"
+      />
+    </template>
+    <div v-else class="no-news-message">Нет новостей для отображения</div>
   </div>
-  
-  <Modal 
-    :is-open="isModalOpen"
-    @close="isModalOpen = false"
-  >
+
+  <Modal :is-open="isModalOpen" @close="isModalOpen = false">
     <CreateNewsForm @submit="handleCreateNews" />
   </Modal>
 </template>
@@ -128,11 +155,12 @@ const handleCreateNews = (newsData) => {
   flex: 1;
 }
 
-.create-button, .requests-button {
+.create-button,
+.requests-button {
   height: 65px;
   border: none;
   border-radius: 20px;
-  background: #0066FF;
+  background: #0066ff;
   color: white;
   font-size: 16px;
   font-weight: 500;
@@ -141,7 +169,8 @@ const handleCreateNews = (newsData) => {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
   width: 100%;
 }
-.requests-button{
+
+.requests-button {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
   background-color: white;
   color: #161616;
@@ -180,7 +209,7 @@ const handleCreateNews = (newsData) => {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .selects-container > * {
     width: 100%;
   }
