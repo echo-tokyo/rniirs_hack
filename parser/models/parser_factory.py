@@ -1,12 +1,13 @@
 from typing import Dict, Type
 from .base_parser import BaseParser
 from .parsers.rscf_parser import RscfParser
-
+from .parsers.nauka_rf import NaukaRfParser
 class ParserFactory:
     """Фабрика для создания парсеров"""
     
     _parsers: Dict[str, Type[BaseParser]] = {
         'rscf': RscfParser,
+        'nauka_rf': NaukaRfParser,
         # Здесь будут добавляться новые парсеры
         # 'other_source': OtherSourceParser,
     }

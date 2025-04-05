@@ -30,13 +30,27 @@ def save_processed_links(links: Set[str], source: str) -> None:
     with open(os.path.join(BASE_DIR, f'{source}_processed_links.json'), 'w') as f:
         json.dump({'processed_links': list(links)}, f)
 
-def send_to_database(news_items: List[Dict[str, Any]], is_update: bool = False) -> None:
+async def send_to_database(news_items: List[Dict[str, Any]]) -> None:
     """Имитация отправки новостей в базу данных"""
     if is_update:
         print(f"Отправка {len(news_items)} новых новостей в БД...")
     else:
         print(f"Первичная отправка {len(news_items)} новостей в БД...")
     # Здесь будет код для отправки в БД
+
+# async def send_to_database(items: List[Dict]) -> bool:
+#     """Асинхронно отправляет новости в базу данных"""
+#     try:
+#         async with aiohttp.ClientSession() as session:
+#             async with session.post(
+#                 'http://your-backend/api/news/batch',
+#                 json={'items': items},
+#                 headers={'Content-Type': 'application/json'}
+#             ) as response:
+#                 return response.status == 200
+#     except Exception as e:
+#         logger.error(f"Ошибка при отправке данных в БД: {str(e)}")
+#         return False
 
 PARSER_STATE_FILE = os.path.join(BASE_DIR, 'parser_state.json')
 
