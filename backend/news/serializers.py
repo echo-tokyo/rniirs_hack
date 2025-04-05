@@ -21,7 +21,7 @@ class CategorySerializer(serializers.Serializer):
         return instance
 
 
-class   NewsSerializer(serializers.Serializer):
+class NewsSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(max_length=255)
     description = serializers.CharField()
@@ -29,6 +29,26 @@ class   NewsSerializer(serializers.Serializer):
     category_id = serializers.IntegerField()
     is_confirmed = serializers.BooleanField(default=False, required=False)
     author_id = serializers.IntegerField()
+
+    # Добавляем поле author как "read-only" и динамическое
+    author = serializers.SerializerMethodField()
+
+    def get_author(self, obj):
+        # Здесь мы извлекаем объект автора по author_id
+        try:
+            author = CustomUser.objects.get(id=obj.author_id)  # Замените `User` на вашу модель
+            return {
+                "id": author.id,
+                "login": author.login, 
+            }
+        except CustomUser.DoesNotExist:
+            return None  # Если автора нет, возвращаем None
+
+    def to_representation(self, instance):
+        # Используем стандартное поведение сериализатора и добавляем поле author
+        representation = super().to_representation(instance)
+        representation['author'] = self.get_author(instance)
+        return representation
 
     def save(self, validated_data):
         return News.objects.create(**validated_data)
