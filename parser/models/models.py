@@ -17,24 +17,37 @@ class RscfParser:
         }
         self.months: Dict[str, str] = MONTHS
 
-    def get_news(self, category: str = 'all') -> List[Dict[str, str]]:
+    def get_news(self, category: str = 'all', initial_load: bool = False, pages: int = 10) -> List[Dict[str, str]]:
+        """
+        Получает новости с сайта РНФ
+        
+        Args:
+            category: категория новостей
+            initial_load: флаг первоначальной загрузки
+            pages: количество страниц для первоначальной загрузки
+        """
         if category not in self.categories:
             raise ValueError(f"Неверная категория. Доступные категории: {', '.join(self.categories.keys())}")
         
-        url = f"{self.base_url}{self.categories[category]}"
-        response = get(url)
-        soup = BeautifulSoup(response.text, "html.parser")
+        all_news_items: List[Dict[str, str]] = []
         
-        news_items: List[Dict[str, str]] = []
-        for item in soup.find_all('div', class_='news-item'):
-            news = {
-                'title': item.find('a', class_='news-title').text.strip(),
-                'category': item.find('a', class_='news-category').text.strip(),
-                'link': item.find('a', class_='news-title')['href']
-            }
-            news_items.append(news)
+        # Определяем количество страниц для парсинга
+        pages_to_parse = pages if initial_load else 1
         
-        return news_items
+        for page in range(1, pages_to_parse + 1):
+            url = f"{self.base_url}?PAGEN_2={page}"
+            response = get(url)
+            soup = BeautifulSoup(response.text, "html.parser")
+            
+            for item in soup.find_all('div', class_='news-item'):
+                news = {
+                    'title': item.find('a', class_='news-title').text.strip(),
+                    'category': item.find('a', class_='news-category').text.strip(),
+                    'link': item.find('a', class_='news-title')['href']
+                }
+                all_news_items.append(news)
+        
+        return all_news_items
     
     def _process_links(self, element: Tag) -> str:
         """Обрабатывает текст и заменяет HTML ссылки на markdown формат"""
