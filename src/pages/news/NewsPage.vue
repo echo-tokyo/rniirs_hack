@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
+const isAdmin = localStorage.getItem('isAdmin')
 const route = useRoute()
+const router = useRouter()
 const newsData = ref({
   header: '',
   description: '',
@@ -10,10 +12,7 @@ const newsData = ref({
   category: ''
 })
 
-// Здесь имитируем получение данных
-// В реальном приложении здесь был бы API запрос
 onMounted(() => {
-  // Временные тестовые данные
   const mockData = {
     1: {
       header: "НОУ ВЭЙ, ЧИКИПИКИ",
@@ -24,19 +23,27 @@ onMounted(() => {
     }
   }
   
-  const id = route.params.id
+  const id = route.params.id // Use route here
   if (mockData[id]) {
     newsData.value = mockData[id]
   }
 })
-</script>
 
+const newsDelete = () => {
+  router.push({name: 'main'}) // Now this will work
+}
+</script>
 <template>
   <div class="news-page">
     <div class="news-container">
-      <button class="back-button" @click="$router.back()">
-        <span>←</span> Назад
-      </button>
+      <div class="btns-container">
+        <button class="back-button" @click="$router.back()">
+          <span>←</span> Назад
+        </button>
+        <button v-if='isAdmin' class="delete-button" @click="newsDelete()">
+          Удалить
+        </button>
+      </div>
       
       <div class="news-header">
         <h1 class="title">{{ newsData.header }}</h1>
@@ -67,6 +74,13 @@ onMounted(() => {
   padding: 0 2rem;
 }
 
+.btns-container{
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 2rem;
+}
+
 .back-button {
   background: none;
   border: none;
@@ -77,7 +91,6 @@ onMounted(() => {
   color: #666;
   cursor: pointer;
   padding: 0;
-  margin-bottom: 2rem;
 }
 
 .back-button:hover {

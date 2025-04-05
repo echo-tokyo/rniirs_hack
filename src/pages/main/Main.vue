@@ -1,5 +1,17 @@
 <script setup>
 import { CustomSelect, NewsCard } from "@/components"
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const isAdmin = localStorage.getItem('isAdmin')
+
+onMounted(() => {
+  if(!localStorage.getItem('token')){
+    router.push({name: 'signin'})
+  }
+})
+
 const selectOptions = [
   'Все категории',
   'Название категории',
@@ -42,6 +54,7 @@ const sortOptions = [
           placeholder="Сортировка"
         />
       </div>
+      <button v-if='isAdmin' class="requests-button">Запросы</button>
       <button class="create-button">Создать новость</button>
     </div>
   </div>
@@ -80,7 +93,7 @@ const sortOptions = [
   flex: 1;
 }
 
-.create-button {
+.create-button, .requests-button {
   height: 65px;
   border: none;
   border-radius: 20px;
@@ -90,7 +103,13 @@ const sortOptions = [
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
   width: 100%;
+}
+.requests-button{
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  background-color: white;
+  color: #161616;
 }
 
 .create-button:hover {
@@ -105,10 +124,6 @@ const sortOptions = [
 }
 
 @media (min-width: 768px) {
-  .container {
-
-  }
-
   .selects-container {
     gap: 30px;
   }

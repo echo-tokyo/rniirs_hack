@@ -20,6 +20,7 @@ const handleSubmit = (e) => {
   if (e && e.preventDefault) {
     e.preventDefault()
   }
+  localStorage.setItem('token', 'token')
   router.push( { name: 'main' } )
 }
 

@@ -13,7 +13,7 @@ export const routes = [
     component: Main,
   },
   {
-    path: '/signUp',
+    path: '/signup',
     name: 'signup',
     component: SignUp,
   },
