@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 8001
 
 # Команда для запуска приложения
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--timeout-keep-alive", "300"]
+CMD ["python", "app.py"]
