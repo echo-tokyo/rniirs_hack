@@ -63,7 +63,7 @@ GET /api/news/favorite/?user_id=2
 > `pk` - ID новости, которую нужно поместить в список избранного
 
 ```text
-GET /api/news/favorite/{pk}/like/
+PATCH /api/news/favorite/{pk}/like/
 ```
 
 ### Output
@@ -81,7 +81,7 @@ GET /api/news/favorite/{pk}/like/
 > `pk` - ID новости, которую нужно поместить в список избранного
 
 ```text
-GET /api/news/favorite/{pk}/unlike/
+PATCH /api/news/favorite/{pk}/unlike/
 ```
 
 ### Output
