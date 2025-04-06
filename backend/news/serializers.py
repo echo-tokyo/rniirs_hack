@@ -29,7 +29,7 @@ class NewsSerializer(serializers.Serializer):
     category_id = serializers.IntegerField()
     is_confirmed = serializers.BooleanField(default=False, required=False)
     author_id = serializers.IntegerField()
-    liked = serializers.BooleanField()
+    #liked = serializers.BooleanField(required=False, default=False)
 
     # Добавляем поле author как "read-only" и динамическое
     author = serializers.SerializerMethodField()
@@ -59,11 +59,17 @@ class NewsSerializer(serializers.Serializer):
             return None
 
     def to_representation(self, instance):
-        # Используем стандартное поведение сериализатора и добавляем поле author
-        representation = super().to_representation(instance)
+        if isinstance(instance, dict):
+            representation = instance  # Если instance уже словарь, используем его как есть
+        else:
+            representation = super().to_representation(instance)
+
         representation['author'] = self.get_author(instance)
         representation['category'] = self.get_category(instance)
         return representation
+    
+    def create(self, validated_data):
+        return News.objects.create(**validated_date)
 
     def save(self, validated_data):
         return News.objects.create(**validated_data)
