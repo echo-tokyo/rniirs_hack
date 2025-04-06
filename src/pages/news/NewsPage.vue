@@ -6,9 +6,10 @@ import DOMPurify from 'dompurify'
 import html2pdf from 'html2pdf.js'
 import axios from 'axios'
 import { useNewsDataStore } from '@/app/store/store'
+import { decodeJWT } from '@/utils/jwt'
 
 const newsStore = useNewsDataStore()
-const isAdmin = localStorage.getItem('isAdmin')
+const isAdmin = ref(false)
 const route = useRoute()
 const router = useRouter()
 const id = route.params.id
@@ -158,7 +159,13 @@ const navigateToNews = (newsId) => {
   router.push(`/news/${newsId}`)
 }
 
+// Проверяем isAdmin при монтировании компонента
 onMounted(() => {
+  const token = localStorage.getItem('access')
+  if (token) {
+    const decodedToken = decodeJWT(token)
+    isAdmin.value = decodedToken?.is_superuser || false
+  }
   window.scrollTo(0, 0)
   fetchNewsData(id)
 })
@@ -234,7 +241,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <button v-if='!isAdmin' class="delete-button no-print" @click="newsDelete">
+    <button v-if="isAdmin" class="delete-button no-print" @click="newsDelete">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
       </svg>
@@ -737,5 +744,9 @@ img{
   .recommendation-card {
     padding: 1rem;
   }
+}
+
+.like-button {
+  display: none;
 }
 </style> 

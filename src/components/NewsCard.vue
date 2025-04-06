@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useNewsDataStore } from '@/app/store/store'
 
 const store = useNewsDataStore()
@@ -12,52 +12,25 @@ const props = defineProps({
   id: {
     type: [String, Number],
     required: true,
-  },
-  is_liked: Boolean,
-})
-
-const isFavorite = ref(props.is_liked)
-
-onMounted(() => {
-  // Проверяем, есть ли id в избранном при монтировании
-  isFavorite.value = store.favorites.includes(props.id)
-})
-
-watch(
-  () => props.is_liked,
-  (newVal) => {
-    isFavorite.value = newVal
   }
-)
-
-watch(
-  () => store.favorites,
-  () => {
-    // Обновляем состояние при изменении favorites в store
-    isFavorite.value = store.favorites.includes(props.id)
-  }
-)
-
-const toggleFavorite = () => {
-  // Вызываем метод toggleFavorite из стора
-  store.toggleFavorite(props.id)
-  isFavorite.value = store.favorites.includes(props.id)
-}
+})
 
 const cleanDescription = computed(() => {
   if (!props.description) return ''
   return props.description
-    .replace(/\*\*(.*?)\*\*/g, '$1') // Убираем жирный текст **
-    .replace(/\*(.*?)\*/g, '$1') // Убираем курсив *
-    .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Убираем ссылки [text](url)
-    .replace(/\`(.*?)\`/g, '$1') // Убираем инлайн код
-    .replace(/\#{1,6}\s/g, '') // Убираем заголовки #
-    .replace(/\n\-\s/g, '\n') // Убираем маркеры списка
-    .replace(/\n\d\.\s/g, '\n') // Убираем нумерованные списки
-    .replace(/!\[(.*?)\]\(.*?\)/g, '') // Убираем картинки ![alt](url)
-    .replace(/!image/g, '') // Убираем !image
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+    .replace(/\`(.*?)\`/g, '$1')
+    .replace(/\#{1,6}\s/g, '')
+    .replace(/\n\-\s/g, '\n')
+    .replace(/\n\d\.\s/g, '\n')
+    .replace(/!\[(.*?)\]\(.*?\)/g, '')
+    .replace(/!image/g, '')
+    + '...'
 })
 </script>
+
 <template>
   <div class="NewsCard-container" @click="$router.push(`/news/${props.id}`)">
     <div class="NewsCard-information">
@@ -68,24 +41,6 @@ const cleanDescription = computed(() => {
 
       <div class="NewsCard-bottom">
         <h2 class="NewsCard-information__date">{{ props.date }}</h2>
-        <button
-          class="heart-button"
-          :class="{ 'is-favorite': isFavorite }"
-          @click.stop="toggleFavorite"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-              fill="currentColor"
-            />
-          </svg>
-        </button>
       </div>
     </div>
     <div class="NewsCard-category">
@@ -162,33 +117,6 @@ const cleanDescription = computed(() => {
   font-size: 12px;
   color: #999;
   margin: 0;
-}
-
-.heart-button {
-  background: none;
-  border: none;
-  padding: 8px;
-  cursor: pointer;
-  color: #999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  border-radius: 50%;
-}
-
-.heart-button:hover {
-  color: #ff4757;
-  background: rgba(255, 71, 87, 0.1);
-}
-
-.heart-button.is-favorite {
-  color: #ff4757;
-  background: rgba(255, 71, 87, 0.1);
-}
-
-.heart-button.is-favorite:hover {
-  background: rgba(255, 71, 87, 0.2);
 }
 
 .NewsCard-category {

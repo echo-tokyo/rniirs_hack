@@ -10,13 +10,17 @@ import { testCategories } from './testCategories'
 import { useNewsDataStore, useCategoriesStore } from '@/app/store/store'
 import { testFavoriteData } from './testFavoriteData'
 import axios from 'axios'
+import { decodeJWT } from '@/utils/jwt'
 
 const data = useNewsDataStore()
 const categories = useCategoriesStore()
 const router = useRouter()
-const isAdmin = localStorage.getItem('isAdmin')
+const isAdmin = ref(false)
 
-const isFavorite = ref(false)
+const currentPage = ref(1)
+const totalPages = ref(1)
+const isLoading = ref(false)
+
 const selectOptions = computed(() => categories.categoriesList.map(category => category.title))
 const selectedCategory = ref(categories.categories.category || '')
 const selectedCity = ref(categories.categories.city || '')
@@ -25,7 +29,7 @@ const selectedSort = ref(categories.categories.sort || '')
 const cityOptions = ['РНФЦ', 'наука.рф', 'Пользователи']
 const sortOptions = ['Новые', 'Старые']
 
-const API_URL = 'http://109.73.194.154:81/api/news/'
+const API_URL = 'http://109.73.194.154:81/api/news/short/'
 const CATEGORIES_URL = 'http://109.73.194.154:81/api/categories/'
 
 // Добавим функцию для определения источника новости
@@ -42,12 +46,11 @@ const filteredNews = computed(() => {
     return []
   }
 
-  // Если активен режим избранного, показываем только избранные новости
-  if (isFavorite.value) {
-    return data.getFavoriteNews()
-  }
-
   let result = [...data.news]
+  console.log('Состояние новостей перед фильтрацией:', result.map(item => ({
+    id: item.id,
+    title: item.title
+  })))
 
   if (selectedCategory.value) {
     result = result.filter((news) => news?.category?.title === selectedCategory.value)
@@ -95,7 +98,7 @@ watch([selectedCategory, selectedCity, selectedSort], ([category, city, sort]) =
 })
 
 // загрузка ресурсов
-const fetchData = async () => {
+const fetchData = async (page = 1) => {
   const token = localStorage.getItem('access')
   if (!token) {
     router.push({ name: 'signin' })
@@ -103,82 +106,87 @@ const fetchData = async () => {
   }
 
   try {
+    isLoading.value = true
     // Проверяем валидность токена
     await axios.post("http://109.73.194.154:81/api/token/verify/", {
       token: token
     })
     
-    // Получаем новости с API
-    const newsResponse = await axios.get(API_URL, {
+    // Получаем новости с API с учетом страницы
+    const newsResponse = await axios.get(`${API_URL}?page=${page}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     })
     
-    // Обновляем новости
-    data.updateNews(newsResponse.data.results)
+    console.log('Полученные данные с сервера:', newsResponse.data.results.map(item => ({
+      id: item.id,
+      title: item.title,
+      liked: item.liked
+    })))
     
-    // Выводим 3 случайные новости
-    data.getRandomNews()
+    // Обновляем новости и информацию о пагинации
+    data.updateNews(newsResponse.data.results)
+    totalPages.value = Math.ceil(newsResponse.data.count / 10)
+    currentPage.value = page
     
     // Проверяем, есть ли категории в store
     if (categories.categoriesList.length === 0) {
-      // Если категорий нет, загружаем их с API
       const categoriesResponse = await axios.get(CATEGORIES_URL, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
       
-      console.log('Загружены новые категории:', categoriesResponse.data)
       categories.updateCategoriesList(categoriesResponse.data)
-    } else {
-      console.log('Используются кэшированные категории:', categories.categoriesList)
     }
     
   } catch (error) {
     console.error('Ошибка при получении данных:', error)
     if (error.response?.status === 401) {
-      // Если токен невалидный, удаляем его и редиректим на страницу входа
       localStorage.removeItem('access')
       localStorage.removeItem('refresh')
       router.push({ name: 'signin' })
     }
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handlePageChange = (newPage) => {
+  if (newPage >= 1 && newPage <= totalPages.value && newPage !== currentPage.value) {
+    window.scrollTo(0, 0)
+    fetchData(newPage)
   }
 }
 
 const isModalOpen = ref(false)
 
-const handleCreateNews = (newsData) => {
-  console.log('Создана новость:', newsData)
+const handleCreateNews = async () => {
+  isModalOpen.value = false
+  // Обновляем список новостей после создания
+  await fetchData(currentPage.value)
+}
+
+const handleCloseModal = () => {
   isModalOpen.value = false
 }
 
-const getFavorite = () => {
-  isFavorite.value = !isFavorite.value
-}
-
-onMounted(fetchData)
+// Проверяем isAdmin при монтировании компонента
+onMounted(() => {
+  const token = localStorage.getItem('access')
+  if (token) {
+    const decodedToken = decodeJWT(token)
+    isAdmin.value = decodedToken?.is_superuser || false
+  }
+  fetchData(1)
+})
 </script>
 
 <template>
   <div class="app">
     <div class="container">
       <div class="filters-container">
-        <button class="favorite-button" :class="{ 'active': isFavorite }" @click="getFavorite()">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-              fill="currentColor"
-            />
-          </svg>
-        </button>
         <div class="selects-container">
           <CustomSelect
             v-model="selectedCategory"
@@ -197,7 +205,7 @@ onMounted(fetchData)
           />
         </div>
       </div>
-      <button v-if="!isAdmin" class="requests-button" @click="router.push('/requests')">
+      <button v-if="isAdmin" class="requests-button" @click="router.push('/requests')">
         Запросы
       </button>
       <button class="create-button" @click="isModalOpen = true">Создать новость</button>
@@ -216,13 +224,33 @@ onMounted(fetchData)
         :description="item.description"
         :date="item.date"
         :category="item.category?.title"
-        :is_liked="item.is_liked"
       />
     </template>
+
+    <!-- Pagination controls -->
+    <div class="pagination" v-if="totalPages > 1">
+      <button 
+        class="pagination-button" 
+        :disabled="currentPage === 1"
+        @click="handlePageChange(currentPage - 1)"
+      >
+        ←
+      </button>
+      <div class="pagination-info">
+        {{ currentPage }} из {{ totalPages }}
+      </div>
+      <button 
+        class="pagination-button" 
+        :disabled="currentPage === totalPages"
+        @click="handlePageChange(currentPage + 1)"
+      >
+        →
+      </button>
+    </div>
   </div>
 
-  <Modal :is-open="isModalOpen" @close="isModalOpen = false">
-    <CreateNewsForm @submit="handleCreateNews" />
+  <Modal :is-open="isModalOpen" @close="handleCloseModal">
+    <CreateNewsForm @close="handleCreateNews" />
   </Modal>
 </template>
 
@@ -246,33 +274,6 @@ onMounted(fetchData)
   display: flex;
   gap: 20px;
   width: 100%;
-}
-
-.favorite-button {
-  width: 65px;
-  height: 65px;
-  border: none;
-  border-radius: 20px;
-  background: white;
-  color: #666;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
-  flex-shrink: 0;
-}
-
-.favorite-button:hover {
-  color: #ff4757;
-  background: rgba(255, 71, 87, 0.1);
-}
-
-.favorite-button.active {
-  color: #ff4757;
-  background: rgba(255, 71, 87, 0.15);
-  transform: scale(1.05);
 }
 
 .selects-container {
@@ -353,7 +354,70 @@ onMounted(fetchData)
   }
 
   .favorite-button {
-    width: 100%;
+    display: none;
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 30px;
+  padding-bottom: 30px;
+}
+
+.pagination-button {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  background: white;
+  color: #333;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+}
+
+.pagination-button:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.pagination-button:not(:disabled):hover {
+  background: #f5f5f5;
+}
+
+.pagination-info {
+  font-size: 16px;
+  color: #666;
+}
+
+/* Loading state */
+.NewsContainer {
+  position: relative;
+  min-height: 200px;
+}
+
+.NewsContainer.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  .pagination {
+    gap: 10px;
+  }
+
+  .pagination-button {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
   }
 }
 </style>

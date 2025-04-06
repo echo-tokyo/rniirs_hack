@@ -1,30 +1,102 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { CustomSelect } from '@/components'
-import { testCategories } from '@/pages/main/testCategories'
+import axios from 'axios'
+import { decodeJWT } from '@/utils/jwt'
 
 const title = ref('')
 const content = ref('')
 const selectedCategory = ref('')
+const categories = ref([])
+const error = ref(null)
 
-const emit = defineEmits(['submit'])
+const emit = defineEmits(['submit', 'close'])
 
-const categoryOptions = testCategories.map(cat => cat.data)
+const API_URL = 'http://109.73.194.154:81/api'
 
-const handleSubmit = () => {
-  emit('submit', {
-    title: title.value,
-    content: content.value,
-    category: selectedCategory.value
-  })
-  title.value = ''
-  content.value = ''
-  selectedCategory.value = ''
+// Загрузка категорий
+const loadCategories = async () => {
+  try {
+    const token = localStorage.getItem('access')
+    if (!token) return
+
+    const response = await axios.get(`${API_URL}/categories/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    categories.value = response.data
+  } catch (error) {
+    console.error('Ошибка при загрузке категорий:', error)
+  }
 }
+
+const handleSubmit = async () => {
+  try {
+    const token = localStorage.getItem('access')
+    if (!token) {
+      error.value = 'Необходима авторизация'
+      return
+    }
+
+    const decodedToken = decodeJWT(token)
+    const userId = decodedToken?.user_id
+
+    if (!userId) {
+      error.value = 'Не удалось определить пользователя'
+      return
+    }
+
+    if (!title.value || !content.value || !selectedCategory.value) {
+      error.value = 'Заполните все поля'
+      return
+    }
+
+    const selectedCategoryId = categories.value.find(cat => cat.title === selectedCategory.value)?.id
+
+    if (!selectedCategoryId) {
+      error.value = 'Выберите категорию'
+      return
+    }
+
+    const response = await axios.post(`${API_URL}/news/`, {
+      title: title.value,
+      description: content.value,
+      category_id: selectedCategoryId,
+      author_id: userId,
+    }, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    console.log('Новость успешно создана:', response.data)
+    
+    // Очищаем форму
+    title.value = ''
+    content.value = ''
+    selectedCategory.value = ''
+    error.value = null
+    
+    // Закрываем модальное окно
+    emit('close')
+  } catch (err) {
+    console.error('Ошибка при создании новости:', err)
+    error.value = 'Ошибка при создании новости'
+  }
+}
+
+onMounted(() => {
+  loadCategories()
+})
 </script>
 
 <template>
   <form @submit.prevent="handleSubmit" class="create-news-form">
+    <div v-if="error" class="error-message">
+      {{ error }}
+    </div>
     <div class="form-group">
       <input
         v-model="title"
@@ -36,7 +108,7 @@ const handleSubmit = () => {
     <div class="form-group">
       <CustomSelect
         v-model="selectedCategory"
-        :options="categoryOptions"
+        :options="categories.map(cat => cat.title)"
         placeholder="Выберите категорию"
         class="category-select"
       />
@@ -112,5 +184,14 @@ const handleSubmit = () => {
 
 .submit-button:hover {
   background: #0052cc;
+}
+
+.error-message {
+  background: #ffebee;
+  color: #c62828;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
 }
 </style> 
