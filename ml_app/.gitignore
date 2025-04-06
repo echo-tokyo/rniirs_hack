@@ -13,3 +13,6 @@ __pycache__/
 .json
 
 .sqlite3
+
+__pycache__/
+__pycache__

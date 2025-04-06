@@ -1,0 +1,17 @@
+
+Copy
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+venv
+.venv
+env/
+venv/
+.venv/
+*.egg-info
+.git
+.gitignore
+.DS_Store
