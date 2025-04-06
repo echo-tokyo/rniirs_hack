@@ -23,7 +23,7 @@ class NaukaRfParser(BaseParser):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
         
-        # Инициализация Mistral AI
+        # Инициализация ML
         self.ML_API_URL = "http://classifier-api:8001/predict"
         
         self.session = None  # Добавляем атрибут для хранения сессии
