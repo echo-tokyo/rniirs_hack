@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from users.models import CustomUser
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class CustomUserSerializer(serializers.Serializer):
@@ -19,3 +20,14 @@ class CustomUserSerializer(serializers.Serializer):
 
         instance.save()
         return instance
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)  # Создаем стандартный токен
+
+        # Добавляем пользовательские поля
+        token["is_superuser"] = user.is_superuser
+
+        return token
