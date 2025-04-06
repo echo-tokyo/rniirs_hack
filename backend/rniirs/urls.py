@@ -19,7 +19,7 @@ from django.urls import path, re_path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from users.views import CustomUserAPIView
 from news.views import (NewsAPIView, CategoryAPIView, OneNewsAPIView,
-                        NewsParsAPIView, NewsFavoriteGETAPIView, NewsFavoritePOSTAPIView)
+                        NewsParsAPIView, NewsFavoriteGETAPIView, NewsFavoritePOSTAPIView, NewsShortAPIView)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,6 +32,7 @@ urlpatterns = [
 
     path('api/news/', NewsAPIView.as_view(), name='news'),
     path('api/news/<int:pk>', OneNewsAPIView.as_view(), name='one-news'),
+    path('api/news/short/', NewsShortAPIView.as_view(), name='news-short'),
 
     path('api/news/favorite/', NewsFavoriteGETAPIView.as_view()),
     # favorite param may be one of "like" or "unlike"

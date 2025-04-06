@@ -4,6 +4,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from rest_framework.pagination import PageNumberPagination
+
+
 from users.serializers import CustomUserSerializer
 from .serializers import *
 from .models import *
@@ -41,22 +44,30 @@ class NewsAPIView(APIView):
 
     @staticmethod
     def get(request):
+        # Создаем пагинатор
+        paginator = PageNumberPagination()
+        paginator.page_size = 20  # Дефолтный размер страницы
+        paginator.page_size_query_param = 'page_size'  # Параметр для изменения размера
+
+        # Основная логика фильтрации
         if not request.query_params:
-            news = News.objects.all().filter(is_confirmed=True)
-            serializer = NewsSerializer(news, many=True)
-            return Response(serializer.data)
+            news = News.objects.filter(is_confirmed=True)
 
-        if request.query_params.get('confirmed') == "False" and request.user.is_superuser:
-            news = News.objects.all().filter(is_confirmed=False)
-            serializer = NewsSerializer(news, many=True)
-            return Response(serializer.data)
+        elif request.query_params.get('confirmed') == "False" and request.user.is_superuser:
+            news = News.objects.filter(is_confirmed=False)
 
-        if request.query_params.get('user_id') == str(request.user.id):
-            news = News.objects.all().filter(author_id=request.user.id)
-            serializer = NewsSerializer(news, many=True)
-            return Response(serializer.data)
+        elif request.query_params.get('user_id') == str(request.user.id):
+            news = News.objects.filter(author_id=request.user.id)
 
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        # Применяем пагинацию к queryset
+        paginated_news = paginator.paginate_queryset(news, request)
+
+        # Сериализация + возврат с метаданными пагинации
+        serializer = NewsSerializer(paginated_news, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     @staticmethod
     def post(request):
@@ -127,6 +138,39 @@ class NewsParsAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class NewsShortAPIView(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    @staticmethod
+    def get(request):
+        # Создаем пагинатор
+        paginator = PageNumberPagination()
+        paginator.page_size = 20  # Дефолтный размер страницы
+        paginator.page_size_query_param = 'page_size'  # Параметр для изменения размера
+
+        # Основная логика фильтрации
+        if not request.query_params:
+            news = News.objects.filter(is_confirmed=True)
+
+        elif request.query_params.get('confirmed') == "False" and request.user.is_superuser:
+            news = News.objects.filter(is_confirmed=False)
+
+        elif request.query_params.get('user_id') == str(request.user.id):
+            news = News.objects.filter(author_id=request.user.id)
+
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        # Применяем пагинацию к queryset
+        paginated_news = paginator.paginate_queryset(news, request)
+
+        # Сериализация + возврат с метаданными пагинации
+        serializer = NewsShortSerializer(paginated_news, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
 
 class NewsFavoriteGETAPIView(APIView):
 

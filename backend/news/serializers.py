@@ -77,6 +77,46 @@ class NewsSerializer(serializers.Serializer):
         return instance
 
 
+class NewsShortSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    title = serializers.CharField(max_length=255)
+    description = serializers.CharField()  # Оставляем базовый CharField
+    date = serializers.DateField(required=False)
+    category_id = serializers.IntegerField()
+    is_confirmed = serializers.BooleanField(default=False, required=False)
+    author_id = serializers.IntegerField()
+    liked = serializers.BooleanField()
+
+    author = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+
+    def get_author(self, obj):
+        try:
+            author = CustomUser.objects.get(id=obj.author_id)
+            return {"id": author.id, "login": author.login}
+        except CustomUser.DoesNotExist:
+            return None
+
+    def get_category(self, obj):
+        try:
+            category = Category.objects.get(id=obj.category_id)
+            return {"id": category.id, "title": category.title}
+        except Category.DoesNotExist:
+            return None
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Обрезаем описание до 400 символов
+        description = representation.get('description', '')
+        if description:  # Проверяем, не пустая ли строка
+            representation['description'] = description[:400]
+
+        representation['author'] = self.get_author(instance)
+        representation['category'] = self.get_category(instance)
+        return representation
+
+
 class NewsParsSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(max_length=255)
