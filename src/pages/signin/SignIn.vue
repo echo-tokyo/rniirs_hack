@@ -1,20 +1,26 @@
 <template>
   <div class="item">
-    <form action="" @submit.prevent='handleSubmit()'> 
+    <form action="" @submit.prevent="handleSubmit"> 
       <h1>Вход</h1>
       <input 
         type="text" 
-        placeholder='Логин' 
-        v-model='loginValue'
+        placeholder="Логин" 
+        v-model="loginValue"
+        :disabled="isLoading"
       >
       <input 
         type="password" 
-        placeholder='Пароль' 
-        v-model='passValue'
+        placeholder="Пароль" 
+        v-model="passValue"
+        :disabled="isLoading"
       >
-      <input type="submit" value='Войти'>
+      <input 
+        type="submit" 
+        :value="isLoading ? 'Вход...' : 'Войти'"
+        :disabled="isLoading"
+      >
     </form>
-    <p>Еще нет аккаунта ? <span class='form-span' @click='routing()'>Зарегистрируйтесь</span></p>
+    <p>Еще нет аккаунта ? <span class="form-span" @click="routing">Зарегистрируйтесь</span></p>
 
     <!-- Попап с ошибкой -->
     <Transition name="slide-fade">
@@ -26,14 +32,37 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const router = useRouter()
 const loginValue = ref('')
 const passValue = ref('')
 const errorMessage = ref('')
 let errorTimeout = null
+const isLoading = ref(false)
+
+const API_URL = 'http://109.73.194.154:81/api/token/'
+
+onMounted(async () => {
+  const token = localStorage.getItem('access')
+  if (token) {
+    try {
+      const response = await axios.post("http://109.73.194.154:81/api/token/verify/", {
+        token: token
+      })
+      
+      if (response.status === 200) {
+        router.push({ name: 'main' })
+      }
+    } catch (error) {
+      // Если токен невалидный, удаляем его
+      localStorage.removeItem('access')
+      localStorage.removeItem('refresh')
+    }
+  }
+})
 
 const showError = (message) => {
   errorMessage.value = message
@@ -65,14 +94,40 @@ const validateForm = () => {
   return true
 }
 
-const handleSubmit = (e) => {
-  if (e && e.preventDefault) {
-    e.preventDefault()
-  }
-  
-  if (validateForm()) {
-    localStorage.setItem('token', 'token')
-    router.push({ name: 'main' })
+const handleSubmit = async () => {
+  if (!validateForm()) return
+
+  isLoading.value = true
+  try {
+    const response = await axios.post(API_URL, {
+      login: loginValue.value,
+      password: passValue.value
+    })
+
+    if (response.data.access) {
+      // Сохраняем токен в localStorage
+      localStorage.setItem('access', response.data.access)
+      localStorage.setItem('refresh', response.data.refresh)
+      router.push({ name: 'main' })
+    } else {
+      showError('Неверный формат ответа от сервера')
+    }
+  } catch (error) {
+    if (error.response) {
+      // Ошибка от сервера с статусом
+      if (error.response.status === 401) {
+        showError('Неверный логин или пароль')
+      } else {
+        showError('Ошибка сервера: ' + error.response.status)
+      }
+    } else if (error.request) {
+      // Ошибка сети
+      showError('Ошибка сети. Проверьте подключение')
+    } else {
+      showError('Произошла ошибка при входе')
+    }
+  } finally {
+    isLoading.value = false
   }
 }
 

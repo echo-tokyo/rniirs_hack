@@ -1,12 +1,26 @@
 <template>
   <div class="item">
     <h1>Регистрация</h1>
-    <form action="" @submit.prevent='handleSubmit()'> 
-      <input type="text" placeholder='Логин' v-model='loginValue'>
-      <input type="password" placeholder='Пароль' v-model='passValue'>
-      <input type="submit" value='Зарегистрироваться'>
+    <form action="" @submit.prevent="handleSubmit"> 
+      <input 
+        type="text" 
+        placeholder="Логин" 
+        v-model="loginValue"
+        :disabled="isLoading"
+      >
+      <input 
+        type="password" 
+        placeholder="Пароль" 
+        v-model="passValue"
+        :disabled="isLoading"
+      >
+      <input 
+        type="submit" 
+        :value="isLoading ? 'Регистрация...' : 'Зарегистрироваться'"
+        :disabled="isLoading"
+      >
     </form>
-    <h3>Есть аккаунт ? <span class='form-span' @click='routing()'>Войдите</span></h3>
+    <h3>Есть аккаунт ? <span class="form-span" @click="routing">Войдите</span></h3>
 
     <!-- Попап с ошибкой -->
     <Transition name="slide-fade">
@@ -18,14 +32,37 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const router = useRouter()
 const loginValue = ref('')
 const passValue = ref('')
 const errorMessage = ref('')
 let errorTimeout = null
+const isLoading = ref(false)
+
+const API_URL = 'http://109.73.194.154:81/api/users/'
+
+onMounted(async () => {
+  const token = localStorage.getItem('access')
+  if (token) {
+    try {
+      const response = await axios.post("http://109.73.194.154:81/api/token/verify/", {
+        token: token
+      })
+      
+      if (response.status === 200) {
+        router.push({ name: 'main' })
+      }
+    } catch (error) {
+      // Если токен невалидный, удаляем его
+      localStorage.removeItem('access')
+      localStorage.removeItem('refresh')
+    }
+  }
+})
 
 const showError = (message) => {
   errorMessage.value = message
@@ -55,14 +92,49 @@ const validateForm = () => {
   return true
 }
 
-const handleSubmit = (e) => {
-  if (e && e.preventDefault) {
-    e.preventDefault()
-  }
-  
-  if (validateForm()) {
-    localStorage.setItem('token', 'token')
-    router.push({ name: 'main' })
+const handleSubmit = async () => {
+  if (!validateForm()) return
+
+  isLoading.value = true
+  try {
+    const response = await axios.post(API_URL, {
+      login: loginValue.value,
+      password: passValue.value
+    })
+
+    if (response.status === 201 || response.status === 200) {
+      // После успешной регистрации выполняем вход
+      try {
+        const loginResponse = await axios.post('http://109.73.194.154:81/api/token/', {
+          login: loginValue.value,
+          password: passValue.value
+        })
+
+        if (loginResponse.data.access) {
+          localStorage.setItem('access', loginResponse.data.access)
+          localStorage.setItem('refresh', loginResponse.data.refresh)
+          router.push({ name: 'main' })
+        }
+      } catch (loginError) {
+        showError('Регистрация успешна, но возникла ошибка при входе. Пожалуйста, войдите вручную.')
+        router.push({ name: 'signin' })
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    if (error.response) {
+      if (error.response.status === 400) {
+        showError('Пользователь с таким логином уже существует')
+      } else {
+        showError('Ошибка сервера: ' + error.response.status)
+      }
+    } else if (error.request) {
+      showError('Ошибка сети. Проверьте подключение')
+    } else {
+      showError('Произошла ошибка при регистрации')
+    }
+  } finally {
+    isLoading.value = false
   }
 }
 

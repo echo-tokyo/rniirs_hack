@@ -1,11 +1,13 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-import { testData } from '../main/testData'
 import html2pdf from 'html2pdf.js'
+import axios from 'axios'
+import { useNewsDataStore } from '@/app/store/store'
 
+const newsStore = useNewsDataStore()
 const isAdmin = localStorage.getItem('isAdmin')
 const route = useRoute()
 const router = useRouter()
@@ -16,6 +18,8 @@ const contentRef = ref(null)
 const isPdfButtonVisible = ref(true)
 const isBackButtonVisible = ref(true)
 const increaseMargin = ref(false)
+const error = ref(null)
+const recommendations = ref([])
 
 // Настраиваем marked для обработки ссылок и изображений
 marked.use({
@@ -32,11 +36,53 @@ const parsedContent = computed(() => {
   return DOMPurify.sanitize(html)
 })
 
-onMounted(() => {
-  window.scrollTo(0,0)
-  // получили данные по id
-  newsData.value = testData[0]
-  isLoaded.value = true
+// Выносим логику загрузки данных в отдельную функцию
+const fetchNewsData = async (newsId) => {
+  const token = localStorage.getItem('access')
+  if (!token) {
+    router.push({ name: 'signin' })
+    return
+  }
+
+  try {
+    // Проверяем валидность токена
+    await axios.post("http://109.73.194.154:81/api/token/verify/", {
+      token: token
+    })
+
+    // Получаем данные новости по id
+    const response = await axios.get(`http://109.73.194.154:81/api/news/${newsId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    newsData.value = response.data
+    isLoaded.value = true
+
+    // Получаем рекомендации (3 случайные новости, исключая текущую)
+    recommendations.value = newsStore.getRandomNews(3).filter(news => news.id !== newsId)
+  } catch (err) {
+    console.error('Ошибка при получении новости:', err)
+    if (err.response?.status === 401) {
+      localStorage.removeItem('access')
+      localStorage.removeItem('refresh')
+      router.push({ name: 'signin' })
+    } else {
+      error.value = 'Не удалось загрузить новость'
+      isLoaded.value = true
+    }
+  }
+}
+
+// Следим за изменением ID новости в маршруте
+watch(() => route.params.id, (newId) => {
+  if (newId) {
+    window.scrollTo(0, 0)
+    isLoaded.value = false
+    error.value = null
+    fetchNewsData(newId)
+  }
 })
 
 const handleApprove = () => {
@@ -62,8 +108,8 @@ const handleBack = () => {
     isBackButtonVisible.value = true
   }, 2000) // Показать кнопку снова через 2 секунды
   
-  // Возвращаемся назад
-  router.back()
+  // Возвращаемся на главную
+  router.push({ name: 'main' })
 }
 
 const exportToPdf = () => {
@@ -105,11 +151,25 @@ const shareToVK = () => {
   const title = encodeURIComponent(newsData.value.title)
   window.open(`https://vk.com/share.php?url=${url}&title=${title}`, '_blank')
 }
+
+// Обновляем метод навигации
+const navigateToNews = (newsId) => {
+  if (newsId === id) return
+  router.push(`/news/${newsId}`)
+}
+
+onMounted(() => {
+  window.scrollTo(0, 0)
+  fetchNewsData(id)
+})
 </script>
 
 <template>
-  <div v-if='isLoaded' class="news-page">
-    <div class="news-container" ref="contentRef" :class="{ 'increased-margin': increaseMargin }">
+  <div v-if="isLoaded" class="news-page">
+    <div v-if="error" class="error-message">
+      {{ error }}
+    </div>
+    <div v-else class="news-container" ref="contentRef" :class="{ 'increased-margin': increaseMargin }">
       <div class="btns-container no-print">
         <button v-if="isBackButtonVisible" class="back-button" @click="handleBack">
           <span>←</span> Назад
@@ -154,6 +214,24 @@ const shareToVK = () => {
       </div>
 
       <div class="news-content markdown-body" v-html="parsedContent"></div>
+
+      <!-- Recommendations section -->
+      <div class="recommendations no-print" v-if="recommendations.length > 0">
+        <h2 class="recommendations-title">Рекомендуемые новости</h2>
+        <div class="recommendations-grid">
+          <div v-for="news in recommendations" 
+               :key="news.id" 
+               class="recommendation-card" 
+               @click="navigateToNews(news.id)"
+               :class="{ 'recommendation-card-active': news.id === id }">
+            <h3 class="recommendation-title">{{ news.title }}</h3>
+            <div class="recommendation-meta">
+              <span class="recommendation-date">{{ news.date }}</span>
+              <span class="recommendation-category" v-if="news.category">{{ news.category.title }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <button v-if='!isAdmin' class="delete-button no-print" @click="newsDelete">
@@ -567,6 +645,97 @@ img{
   .share-button {
     flex: 1;
     justify-content: center;
+  }
+}
+
+.error-message {
+  max-width: 1280px;
+  margin: 2rem auto;
+  padding: 1rem 2rem;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.recommendations {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid #eee;
+}
+
+.recommendations-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.recommendation-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  cursor: pointer;
+}
+
+.recommendation-card:hover {
+  background: rgba(0, 102, 255, 0.05);
+}
+
+.recommendation-card-active {
+  background: rgba(0, 102, 255, 0.1);
+  pointer-events: none;
+}
+
+.recommendation-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 1rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.recommendation-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.recommendation-date {
+  font-size: 14px;
+  color: #666;
+}
+
+.recommendation-category {
+  font-size: 14px;
+  color: #0066FF;
+  background: rgba(0, 102, 255, 0.1);
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+@media (max-width: 767px) {
+  .recommendations {
+    margin-top: 3rem;
+  }
+
+  .recommendations-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendation-card {
+    padding: 1rem;
   }
 }
 </style> 

@@ -9,6 +9,7 @@ import { testData } from './testData'
 import { testCategories } from './testCategories'
 import { useNewsDataStore, useCategoriesStore } from '@/app/store/store'
 import { testFavoriteData } from './testFavoriteData'
+import axios from 'axios'
 
 const data = useNewsDataStore()
 const categories = useCategoriesStore()
@@ -16,17 +17,20 @@ const router = useRouter()
 const isAdmin = localStorage.getItem('isAdmin')
 
 const isFavorite = ref(false)
-const selectOptions = ref([])
+const selectOptions = computed(() => categories.categoriesList.map(category => category.title))
 const selectedCategory = ref(categories.categories.category || '')
 const selectedCity = ref(categories.categories.city || '')
 const selectedSort = ref(categories.categories.sort || '')
 
-const cityOptions = ['РНФ', 'Наука.рф', 'Пользователи']
+const cityOptions = ['РНФЦ', 'наука.рф', 'Пользователи']
 const sortOptions = ['Новые', 'Старые']
+
+const API_URL = 'http://109.73.194.154:81/api/news/'
+const CATEGORIES_URL = 'http://109.73.194.154:81/api/categories/'
 
 // Добавим функцию для определения источника новости
 const getNewsSource = (authorLogin) => {
-  if (authorLogin === 'РНФ' || authorLogin === 'Наука.рф') {
+  if (authorLogin === 'РНФЦ' || authorLogin === 'наука.рф') {
     return authorLogin
   }
   return 'Пользователи'
@@ -91,16 +95,56 @@ watch([selectedCategory, selectedCity, selectedSort], ([category, city, sort]) =
 })
 
 // загрузка ресурсов
-const fetchData = () => {
-  if (!localStorage.getItem('token')) {
+const fetchData = async () => {
+  const token = localStorage.getItem('access')
+  if (!token) {
     router.push({ name: 'signin' })
+    return
   }
 
-  // после получения ресурсов
-  data.updateNews(testData)
-  
-  // после получения категорий
-  selectOptions.value = testCategories.map((el) => el?.data)
+  try {
+    // Проверяем валидность токена
+    await axios.post("http://109.73.194.154:81/api/token/verify/", {
+      token: token
+    })
+    
+    // Получаем новости с API
+    const newsResponse = await axios.get(API_URL, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    
+    // Обновляем новости
+    data.updateNews(newsResponse.data.results)
+    
+    // Выводим 3 случайные новости
+    data.getRandomNews()
+    
+    // Проверяем, есть ли категории в store
+    if (categories.categoriesList.length === 0) {
+      // Если категорий нет, загружаем их с API
+      const categoriesResponse = await axios.get(CATEGORIES_URL, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      console.log('Загружены новые категории:', categoriesResponse.data)
+      categories.updateCategoriesList(categoriesResponse.data)
+    } else {
+      console.log('Используются кэшированные категории:', categories.categoriesList)
+    }
+    
+  } catch (error) {
+    console.error('Ошибка при получении данных:', error)
+    if (error.response?.status === 401) {
+      // Если токен невалидный, удаляем его и редиректим на страницу входа
+      localStorage.removeItem('access')
+      localStorage.removeItem('refresh')
+      router.push({ name: 'signin' })
+    }
+  }
 }
 
 const isModalOpen = ref(false)
@@ -121,7 +165,7 @@ onMounted(fetchData)
   <div class="app">
     <div class="container">
       <div class="filters-container">
-        <button class="favorite-button" @click="getFavorite()">
+        <button class="favorite-button" :class="{ 'active': isFavorite }" @click="getFavorite()">
           <svg
             width="24"
             height="24"
@@ -215,7 +259,7 @@ onMounted(fetchData)
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
   flex-shrink: 0;
 }
@@ -223,6 +267,12 @@ onMounted(fetchData)
 .favorite-button:hover {
   color: #ff4757;
   background: rgba(255, 71, 87, 0.1);
+}
+
+.favorite-button.active {
+  color: #ff4757;
+  background: rgba(255, 71, 87, 0.15);
+  transform: scale(1.05);
 }
 
 .selects-container {

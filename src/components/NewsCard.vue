@@ -127,8 +127,9 @@ const cleanDescription = computed(() => {
 }
 
 .NewsCard-information__header {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
+  width: 70%;
   margin: 0 0 8px 0;
   overflow: hidden;
   text-overflow: ellipsis;
