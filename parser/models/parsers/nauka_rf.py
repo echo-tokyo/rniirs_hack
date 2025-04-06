@@ -270,12 +270,18 @@ class NaukaRfParser(BaseParser):
             return self._category_cache[title]
         
         try:
-            async with self.session.get(self.ML_API_URL) as response:
+            async with self.session.post(
+                self.ML_API_URL,
+                json={
+                    "text": title
+                },
+                headers={"Content-Type": "application/json"}
+            ) as response:
                 if response.status != 200:
                     self.logger.error(f"Ошибка при получении деталей новости: {response.status}")
                     return "Новости Фонда"
                 
-                result = response.json()
+                result = await response.json()
                 category = result.get("prediction", "Новости Фонда")
                 
                 # Валидация полученной категории
