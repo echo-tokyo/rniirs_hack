@@ -136,7 +136,7 @@ async def process_news_source(source: str):
             if not initial_load_completed:
                 # Первичная загрузка - используем пакетную обработку
                 logger.info(f"[{source}] Первичная загрузка данных")
-                parser.set_send_callback(save_to_csv)  # Включаем пакетную отправку
+                parser.set_send_callback(send_to_database)  # Включаем пакетную отправку
                 current_news = await p.get_news(initial_load=True, pages=AMOUNT_PAGES)
                 
                 if current_news:
@@ -185,7 +185,7 @@ async def process_news_source(source: str):
 
 async def main():
     """Основная функция для запуска парсеров"""
-    sources = ['rscf']
+    sources = ['rscf', 'nauka_rf']
     tasks = [process_news_source(source) for source in sources]
     await asyncio.gather(*tasks)
 
