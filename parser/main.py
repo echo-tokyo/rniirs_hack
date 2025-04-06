@@ -2,9 +2,11 @@ import logging
 import os
 import asyncio
 import json
+import time
+
 from models.parser_factory import ParserFactory
-from config import BASE_DIR
-from utils.database import send_to_database
+from config import BASE_DIR, AMOUNT_PAGES
+from utils.database import send_to_database, save_to_csv
 
 # Настройка логгера
 logging.basicConfig(
@@ -134,8 +136,8 @@ async def process_news_source(source: str):
             if not initial_load_completed:
                 # Первичная загрузка - используем пакетную обработку
                 logger.info(f"[{source}] Первичная загрузка данных")
-                parser.set_send_callback(send_to_database)  # Включаем пакетную отправку
-                current_news = await p.get_news(initial_load=True, pages=500)
+                parser.set_send_callback(save_to_csv)  # Включаем пакетную отправку
+                current_news = await p.get_news(initial_load=True, pages=AMOUNT_PAGES)
                 
                 if current_news:
                     # Сохраняем все ссылки
@@ -183,18 +185,26 @@ async def process_news_source(source: str):
 
 async def main():
     """Основная функция для запуска парсеров"""
-    sources = ['rscf', 'nauka_rf']
+    sources = ['rscf']
     tasks = [process_news_source(source) for source in sources]
     await asyncio.gather(*tasks)
 
 def run_parser():
     """Функция для запуска парсера"""
+    
+    start_time = time.time()
+    
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         logger.info("Парсер остановлен пользователем")
     except Exception as e:
         logger.error(f"Критическая ошибка: {str(e)}")
+    finally:
+        end_time = time.time()
+        duration = round(end_time - start_time, 2)
+        print(f"Время выполнения парсинга: {duration} сек.")
+
 
 if __name__ == "__main__":
     run_parser()

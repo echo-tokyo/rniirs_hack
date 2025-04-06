@@ -39,11 +39,12 @@ class NaukaRfParser(BaseParser):
         
         # Настройка логгера с отключенным выводом
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.ERROR)  # Показывать только ошибки
+        self.logger.setLevel(logging.INFO)  # Показывать только ошибки
 
         self.news_buffer = []
         self.batch_size = 10
         self._send_callback = None  # Добавляем атрибут для колбэка
+        self._category_cache = {}  # Кэш для категорий
 
     @property
     def source_name(self) -> str:
@@ -96,7 +97,7 @@ class NaukaRfParser(BaseParser):
         self.logger.info(f"Заголовок: {title}")
         
         link = item['url']
-        self.logger.info(f"Ссылка: {link}")
+        # self.logger.info(f"Ссылка: {link}")
         
         date = await self._parse_date(item['date'])
         self.logger.info(f"Дата: {date}")
@@ -121,7 +122,7 @@ class NaukaRfParser(BaseParser):
             news_item['description'] = details['description']
             # Выводим часть контента для проверки
             content_preview = details['description'][:100] + "..." if len(details['description']) > 100 else details['description']
-            self.logger.info(f"Контент (превью): {content_preview}")
+            # self.logger.info(f"Контент (превью): {content_preview}")
         
         # Выводим итоговую структуру новости
         self.logger.info("Итоговая структура новости:")
@@ -265,34 +266,50 @@ class NaukaRfParser(BaseParser):
 
     async def _get_category(self, title: str) -> str:
         """Определяет категорию новости через Mistral AI"""
+        # Проверяем кэш
+        if title in self._category_cache:
+            return self._category_cache[title]
+            
         try:
+            # Добавляем задержку между запросами
+            await asyncio.sleep(1)  # Задержка в 1 секунду
+            
             prompt = f"""Выбери ТОЛЬКО ОДНУ максимально подходящую категорию для новости с заголовком: "{title}"
 Доступные категории: {', '.join(self.categories)}
 Ответь ТОЛЬКО названием категории из списка, без дополнительных пояснений и знаков препинания."""
 
-            response = self.mistral_client.chat.complete(
-                model=self.mistral_model,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    }
-                ]
-            )
+            max_retries = 3
+            retry_delay = 2
             
-            category = response.choices[0].message.content.strip()
-            
-            # self.logger.debug(f"Полученная категория: {category}")
-            
-            # Проверяем, что полученная категория есть в списке
-            if category in self.categories:
-                self.logger.debug(f"Определена категория '{category}' для новости '{title}'")
-                return category
-            else:
-                # self.logger.warning(f"Получена некорректная категория '{category}', используем дефолтную")
-                return "Новости Фонда"
+            for attempt in range(max_retries):
+                try:
+                    response = self.mistral_client.chat.complete(
+                        model=self.mistral_model,
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": prompt,
+                            }
+                        ]
+                    )
+                    
+                    category = response.choices[0].message.content.strip()
+                    
+                    if category in self.categories:
+                        # Сохраняем в кэш перед возвратом
+                        self._category_cache[title] = category
+                        return category
+                    return "Новости Фонда"
+                    
+                except Exception as e:
+                    if attempt < max_retries - 1:  # Если это не последняя попытка
+                        await asyncio.sleep(retry_delay)  # Ждем перед следующей попыткой
+                        retry_delay *= 2  # Увеличиваем время ожидания
+                        continue
+                    else:
+                        self.logger.warning(f"Не удалось получить категорию после {max_retries} попыток")
+                        return "Новости Фонда"
                 
         except Exception as e:
-            # self.logger.error(f"Ошибка при определении категории: {e}")
             return "Новости Фонда"
 
