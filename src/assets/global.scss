@@ -1,0 +1,45 @@
+body, html {
+  height: 100%;
+  font-family: "Montserrat", sans-serif;
+  color: #161616;
+}
+
+h1{
+  font-size: 24px;
+  font-weight: 600;
+}
+p, input, span, h3 {
+  font-size: 18px;
+  font-weight: 400;
+}
+h3{
+  font-weight: 300;
+}
+.form-span{
+  color: #0047FF;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+input{
+  width: 25vw;
+  padding: 22px 50px 22px 50px;
+  border-radius: 20px;
+  outline: none;
+  background-color: white;
+  border: none;
+  color: #161616;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+}
+input::placeholder{
+  font-family: "Montserrat", sans-serif;
+  color: #676767;
+  font-size: 18px;
+  font-weight: 500;
+}
+input[type='submit']{
+  cursor: pointer;
+  background-color: #0047FF;
+  color: white;
+  font-weight: 600;
+}

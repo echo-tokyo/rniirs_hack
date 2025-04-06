@@ -1,0 +1,26 @@
+{
+  "name": "rniirs_hack",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.8.4",
+    "dompurify": "^3.2.5",
+    "html2pdf.js": "^0.10.3",
+    "marked": "^15.0.7",
+    "pinia": "^3.0.1",
+    "vue": "^3.5.13",
+    "vue-markdown": "^2.2.4",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "sass-embedded": "^1.86.3",
+    "vite": "^6.2.0"
+  }
+}
