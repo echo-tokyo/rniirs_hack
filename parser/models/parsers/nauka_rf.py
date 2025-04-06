@@ -24,8 +24,7 @@ class NaukaRfParser(BaseParser):
         }
         
         # Инициализация Mistral AI
-        self.mistral_client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
-        self.mistral_model = "mistral-small-latest"
+        self.ML_API_URL = "http://classifier-api:8001/predict"
         
         self.session = None  # Добавляем атрибут для хранения сессии
         
@@ -39,11 +38,12 @@ class NaukaRfParser(BaseParser):
         
         # Настройка логгера с отключенным выводом
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.ERROR)  # Показывать только ошибки
+        self.logger.setLevel(logging.WARNING)  # Показывать только ошибки
 
         self.news_buffer = []
         self.batch_size = 10
         self._send_callback = None  # Добавляем атрибут для колбэка
+        self._category_cache = {}  # Кэш для категорий
 
     @property
     def source_name(self) -> str:
@@ -93,13 +93,13 @@ class NaukaRfParser(BaseParser):
         
         # Получаем базовую информацию
         title = item['title']
-        self.logger.info(f"Заголовок: {title}")
+        # self.logger.info(f"Заголовок: {title}")
         
         link = item['url']
-        self.logger.info(f"Ссылка: {link}")
+        # self.logger.info(f"Ссылка: {link}")
         
         date = await self._parse_date(item['date'])
-        self.logger.info(f"Дата: {date}")
+        # self.logger.info(f"Дата: {date}")
         
         # Определяем категорию
         category = await self._get_category(title)
@@ -121,7 +121,7 @@ class NaukaRfParser(BaseParser):
             news_item['description'] = details['description']
             # Выводим часть контента для проверки
             content_preview = details['description'][:100] + "..." if len(details['description']) > 100 else details['description']
-            self.logger.info(f"Контент (превью): {content_preview}")
+            # self.logger.info(f"Контент (превью): {content_preview}")
         
         # Выводим итоговую структуру новости
         self.logger.info("Итоговая структура новости:")
@@ -195,23 +195,23 @@ class NaukaRfParser(BaseParser):
                     return None
                 
                 html = await response.text()
-                self.logger.debug(f"Получен ответ, длина HTML: {len(html)}")
+                # self.logger.debug(f"Получен ответ, длина HTML: {len(html)}")
                 soup = BeautifulSoup(html, 'html.parser')
                 
                 # Получаем заголовок
                 title = soup.find('h1', class_='u-inner-header__title')
                 title = title.text.strip() if title else ""
-                self.logger.debug(f"Найден заголовок: {title}")
+                # self.logger.debug(f"Найден заголовок: {title}")
                 
                 # Получаем дату
                 date_elem = soup.find('time', class_='u-news-detail__date')
                 date = await self._parse_date(date_elem.text.strip()) if date_elem else None
-                self.logger.debug(f"Найдена дата: {date}")
+                # self.logger.debug(f"Найдена дата: {date}")
                 
                 # Получаем контент
                 content_div = soup.find('div', class_='u-news-detail-page__text-content')
                 if not content_div:
-                    self.logger.error("Не найден основной контент новости")
+                    # self.logger.error("Не найден основной контент новости")
                     return None
                     
                 markdown_content = []
@@ -221,7 +221,7 @@ class NaukaRfParser(BaseParser):
                 if intro:
                     intro_text = intro.text.strip()
                     markdown_content.append(f"**{intro_text}**\n")
-                    self.logger.debug("Обработан интро текст")
+                    # self.logger.debug("Обработан интро текст")
                 
                 # Обработка изображений и текста
                 image_count = 0
@@ -232,7 +232,7 @@ class NaukaRfParser(BaseParser):
                         src = element.get('src', '')
                         if src:
                             image_count += 1
-                            self.logger.debug(f"Найдено изображение {image_count}: {src}")
+                            # self.logger.debug(f"Найдено изображение {image_count}: {src}")
                             if not previous_was_image:
                                 markdown_content.append("")
                             markdown_content.append(f"![image]({src})")
@@ -260,39 +260,34 @@ class NaukaRfParser(BaseParser):
                 return result
                 
         except Exception as e:
-            self.logger.error(f"Ошибка при парсинге деталей новости {url}: {str(e)}", exc_info=True)
+            # self.logger.error(f"Ошибка при парсинге деталей новости {url}: {str(e)}", exc_info=True)
             return None
 
     async def _get_category(self, title: str) -> str:
-        """Определяет категорию новости через Mistral AI"""
+        """Определяет категорию новости через API classifier-api"""
+        # Проверяем кэш
+        if title in self._category_cache:
+            return self._category_cache[title]
+        
         try:
-            prompt = f"""Выбери ТОЛЬКО ОДНУ максимально подходящую категорию для новости с заголовком: "{title}"
-Доступные категории: {', '.join(self.categories)}
-Ответь ТОЛЬКО названием категории из списка, без дополнительных пояснений и знаков препинания."""
-
-            response = self.mistral_client.chat.complete(
-                model=self.mistral_model,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    }
-                ]
-            )
-            
-            category = response.choices[0].message.content.strip()
-            
-            # self.logger.debug(f"Полученная категория: {category}")
-            
-            # Проверяем, что полученная категория есть в списке
-            if category in self.categories:
-                self.logger.debug(f"Определена категория '{category}' для новости '{title}'")
-                return category
-            else:
-                # self.logger.warning(f"Получена некорректная категория '{category}', используем дефолтную")
-                return "Новости Фонда"
+            async with self.session.get(self.ML_API_URL) as response:
+                if response.status != 200:
+                    self.logger.error(f"Ошибка при получении деталей новости: {response.status}")
+                    return "Новости Фонда"
                 
+                result = response.json()
+                category = result.get("prediction", "Новости Фонда")
+                
+                # Валидация полученной категории
+                return category
+                
+        except asyncio.TimeoutError:
+            self.logger.warning("Таймаут при запросе к classifier-api")
+            return "Новости Фонда"
+        except aiohttp.ClientError as e:
+            self.logger.warning(f"Ошибка соединения с classifier-api: {str(e)}")
+            return "Новости Фонда"
         except Exception as e:
-            # self.logger.error(f"Ошибка при определении категории: {e}")
+            self.logger.error(f"Неожиданная ошибка: {str(e)}")
             return "Новости Фонда"
 
