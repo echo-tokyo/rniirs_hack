@@ -86,6 +86,28 @@ class NewsParsSerializer(serializers.Serializer):
     is_confirmed = serializers.BooleanField(default=True, required=False)
     author = serializers.CharField(required=False)
 
+    def create(self, validated_data):
+        # Обработка категории (предположим, что category передается как строка)
+        category_name = validated_data.get("category")
+        category, _ = Category.objects.get_or_create(title=category_name)  # Пример для категории
+
+        # Обработка автора (предположим, что author — это строка с логином)
+        author_login = validated_data.get("author")
+        author, _ = CustomUser.objects.get_or_create(
+            login=author_login, 
+            defaults={"password": settings.PARSER_PASSWORD}  # Пароль только при создании
+        )
+
+        # Создание новости
+        return News.objects.create(
+            title=validated_data.get("title"),
+            description=validated_data.get("description"),
+            date=validated_data.get("date"),
+            category=category,
+            is_confirmed=validated_data.get("is_confirmed", True),
+            author=author,
+        )
+
     def save(self, validated_data):
         return News.objects.create(title=validated_data.get("title"),
                                    description=validated_data.get("description"),
