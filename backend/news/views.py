@@ -20,21 +20,28 @@ class CategoryAPIView(APIView):
 
         return Response(serializer.data)
 
+class OneNewsAPIView(APIView):
+
+    permission_classes = (IsAuthenticated, )
+
+    @staticmethod
+    def get(request, pk):
+        news = News.objects.get(pk=pk)
+
+        if not news.is_confirmed and not request.user.is_superuser:
+            return Response({'error': 'news was not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = NewsSerializer(news, many=False)
+        return Response(serializer.data)
+
 
 class NewsAPIView(APIView):
 
     permission_classes = (IsAuthenticated, )
 
     @staticmethod
-    def get(request, **kwargs):
-        pk = kwargs.get("pk", None)
-
-        if pk:
-            news = News.objects.get(pk=pk)
-            serializer = NewsSerializer(news, many=False)
-            return Response(serializer.data)
-
-        if not request.user.is_superuser and not request.query_params:
+    def get(request):
+        if not request.query_params:
             news = News.objects.all().filter(is_confirmed=True)
             serializer = NewsSerializer(news, many=True)
             return Response(serializer.data)

@@ -18,7 +18,8 @@ from django.contrib import admin
 from django.urls import path, re_path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from users.views import CustomUserAPIView
-from news.views import NewsAPIView, CategoryAPIView, NewsParsAPIView, NewsFavoriteGETAPIView, NewsFavoritePOSTAPIView
+from news.views import (NewsAPIView, CategoryAPIView, OneNewsAPIView,
+                        NewsParsAPIView, NewsFavoriteGETAPIView, NewsFavoritePOSTAPIView)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,10 +30,11 @@ urlpatterns = [
     path('api/users/', CustomUserAPIView.as_view(), name='users'),
     path('api/categories/', CategoryAPIView.as_view(), name='categories'),
 
-    re_path(r'^api/news(/(?P<pk>\d+))?/?$', NewsAPIView.as_view(), name='news'),
+    path('api/news/', NewsAPIView.as_view(), name='news'),
+    path('api/news/<int:pk>', OneNewsAPIView.as_view(), name='one-news'),
 
     path('api/news/favorite/', NewsFavoriteGETAPIView.as_view()),
-    # favorite param may be one of "like" ore "unlike"
+    # favorite param may be one of "like" or "unlike"
     path('api/news/favorite/<int:pk>/<str:favorite>/', NewsFavoritePOSTAPIView.as_view()),
 
     path('api-dev/news/', NewsParsAPIView.as_view(), name='newspars'),
