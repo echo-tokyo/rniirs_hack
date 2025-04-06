@@ -1,0 +1,69 @@
+# docker-compose.yml
+
+services:
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nginx
+    container_name: "nginx_cont"
+    restart: always
+    ports:
+      - 81:80
+    networks:
+      main:
+    depends_on:
+      - djangoapp
+
+  djangoapp:
+    image: backend_app
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: django_cont
+    restart: always
+    env_file:
+      - backend/.env
+    ports:
+      - "8000:8000"
+    networks:
+      main:
+    depends_on:
+      - db
+
+  parser_app:
+    container_name: parser_cont
+    build:
+      context: ./parser
+      dockerfile: Dockerfile
+    volumes:
+      - parser_json_objects:/app/json_objects
+    restart: always
+    env_file:
+      - ./parser/.env
+    networks:
+      main:
+    depends_on:
+      - djangoapp
+
+  db:
+    image: mysql:latest
+    container_name: "db_cont"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+    env_file:
+      - .env
+    networks:
+      main:
+    volumes:
+      - my_mysql_volume:/var/lib/mysql
+
+networks:
+  main:
+    driver: bridge
+
+volumes:
+  my_mysql_volume:
+  parser_json_objects:

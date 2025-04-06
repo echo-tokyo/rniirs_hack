@@ -137,6 +137,7 @@ async def process_news_source(source: str):
                 # Первичная загрузка - используем пакетную обработку
                 logger.info(f"[{source}] Первичная загрузка данных")
                 parser.set_send_callback(send_to_database)  # Включаем пакетную отправку
+                
                 current_news = await p.get_news(initial_load=True, pages=AMOUNT_PAGES)
                 
                 if current_news:

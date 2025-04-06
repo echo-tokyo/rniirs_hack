@@ -11,7 +11,7 @@ from config import BASE_DIR
 
 logger = logging.getLogger(__name__)
 
-async def send_to_database_prod(items: list) -> bool:
+async def send_to_database(items: list) -> bool:
     """Отправляет новости в базу данных через API"""
     logger.info(f"[{items[0].get('author', 'Unknown')}] Отправка пакета из {len(items)} новостей")
     
@@ -34,8 +34,8 @@ async def send_to_database_prod(items: list) -> bool:
     except Exception as e:
         logger.error(f"Ошибка при отправке данных в БД: {str(e)}")
         return False
-    
-async def send_to_database(items: list) -> bool:
+
+async def send_to_database_dev(items: list) -> bool:
     """Временный метод для сохранения новостей в SQLite"""
     db_path = os.path.join(BASE_DIR, "rscf_news.sqlite3")
     
