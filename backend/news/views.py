@@ -44,28 +44,31 @@ class NewsAPIView(APIView):
 
     @staticmethod
     def get(request):
-        # Создаем пагинатор
         paginator = PageNumberPagination()
-        paginator.page_size = 20  # Дефолтный размер страницы
-        paginator.page_size_query_param = 'page_size'  # Параметр для изменения размера
-
-        # Основная логика фильтрации
-        if not request.query_params:
-            news = News.objects.filter(is_confirmed=True)
-
-        elif request.query_params.get('confirmed') == "False" and request.user.is_superuser:
-            news = News.objects.filter(is_confirmed=False)
-
-        elif request.query_params.get('user_id') == str(request.user.id):
-            news = News.objects.filter(author_id=request.user.id)
-
+        paginator.page_size = 20
+        paginator.page_size_query_param = 'page_size'
+    
+        # Создаем базовый queryset
+        news = News.objects.all()
+    
+        # Фильтруем по параметрам (игнорируя пагинационные)
+        confirmed_param = request.query_params.get('confirmed')
+        user_id_param = request.query_params.get('user_id')
+    
+        # Основные условия фильтрации
+        if confirmed_param == "False" and request.user.is_superuser:
+            news = news.filter(is_confirmed=False)
+        elif user_id_param and user_id_param == str(request.user.id):
+            news = news.filter(author_id=request.user.id)
         else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        # Применяем пагинацию к queryset
+            # Если нет специальных фильтров - показываем только подтвержденные
+            news = news.filter(is_confirmed=True)
+    
+        # Всегда добавляем сортировку
+        news = news.order_by('id')
+    
+        # Применяем пагинацию
         paginated_news = paginator.paginate_queryset(news, request)
-
-        # Сериализация + возврат с метаданными пагинации
         serializer = NewsSerializer(paginated_news, many=True)
         return paginator.get_paginated_response(serializer.data)
 
@@ -145,28 +148,31 @@ class NewsShortAPIView(APIView):
 
     @staticmethod
     def get(request):
-        # Создаем пагинатор
         paginator = PageNumberPagination()
-        paginator.page_size = 20  # Дефолтный размер страницы
-        paginator.page_size_query_param = 'page_size'  # Параметр для изменения размера
+        paginator.page_size = 20
+        paginator.page_size_query_param = 'page_size'
 
-        # Основная логика фильтрации
-        if not request.query_params:
-            news = News.objects.filter(is_confirmed=True)
+        # Создаем базовый queryset
+        news = News.objects.all()
 
-        elif request.query_params.get('confirmed') == "False" and request.user.is_superuser:
-            news = News.objects.filter(is_confirmed=False)
+        # Фильтруем по параметрам (игнорируя пагинационные)
+        confirmed_param = request.query_params.get('confirmed')
+        user_id_param = request.query_params.get('user_id')
 
-        elif request.query_params.get('user_id') == str(request.user.id):
-            news = News.objects.filter(author_id=request.user.id)
-
+        # Основные условия фильтрации
+        if confirmed_param == "False" and request.user.is_superuser:
+            news = news.filter(is_confirmed=False)
+        elif user_id_param and user_id_param == str(request.user.id):
+            news = news.filter(author_id=request.user.id)
         else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            # Если нет специальных фильтров - показываем только подтвержденные
+            news = news.filter(is_confirmed=True)
 
-        # Применяем пагинацию к queryset
+        # Всегда добавляем сортировку
+        news = news.order_by('id')
+
+        # Применяем пагинацию
         paginated_news = paginator.paginate_queryset(news, request)
-
-        # Сериализация + возврат с метаданными пагинации
         serializer = NewsShortSerializer(paginated_news, many=True)
         return paginator.get_paginated_response(serializer.data)
 
