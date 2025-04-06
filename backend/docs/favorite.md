@@ -78,7 +78,7 @@ PATCH /api/news/favorite/{pk}/like/
 > 
 > _Path:_
 > 
-> `pk` - ID новости, которую нужно поместить в список избранного
+> `pk` - ID новости, которую нужно убрать из списка избранного
 
 ```text
 PATCH /api/news/favorite/{pk}/unlike/
